@@ -5,7 +5,7 @@ import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import SeedScene from '../scenes/SeedScene';
 
 // Import flower model as a URL using Vite's syntax
-import MODEL from './flower.gltf?url';
+import MODEL from './player.glb?url';
 
 class Flower extends Group {
     // Define the type of the state field
