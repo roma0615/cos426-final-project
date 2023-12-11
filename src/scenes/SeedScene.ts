@@ -1,6 +1,8 @@
 import dat from 'dat.gui';
 import { Scene, Color } from 'three';
 
+import * as CANNON from 'cannon-es';
+
 import Flower from '../objects/Flower';
 import Land from '../objects/Land';
 import BasicLights from '../lights/BasicLights';
@@ -18,10 +20,18 @@ class SeedScene extends Scene {
         rotationSpeed: number;
         updateList: UpdateChild[];
     };
+    timeStep: number;
+    world: CANNON.World;
 
     constructor() {
         // Call parent Scene() constructor
         super();
+
+        // Init world
+        this.timeStep = 1 / 60;
+        this.world = new CANNON.World({
+            gravity: new CANNON.Vec3(0, -9.82, 0),
+        }); 
 
         // Init state
         this.state = {
@@ -34,13 +44,17 @@ class SeedScene extends Scene {
         this.background = new Color(0x7ec0ee);
 
         // Add meshes to scene
-        const land = new Land();
-        const flower = new Flower(this);
+        const land = new Land(this, true);
+        const flower = new Flower(this, true);
         const lights = new BasicLights();
         this.add(land, flower, lights);
 
         // Populate GUI
         this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
+    }
+
+    addBodyToWorld(object: CANNON.Body): void {
+        this.world.addBody(object);
     }
 
     addToUpdateList(object: UpdateChild): void {
@@ -50,6 +64,7 @@ class SeedScene extends Scene {
     update(timeStamp: number): void {
         const { rotationSpeed, updateList } = this.state;
         this.rotation.y = (rotationSpeed * timeStamp) / 10000;
+        this.world.step(this.timeStep);
 
         // Call update for each object in the updateList
         for (const obj of updateList) {

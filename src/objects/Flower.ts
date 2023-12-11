@@ -1,6 +1,7 @@
-import { Group } from 'three';
+import { Group, BoxGeometry, MeshBasicMaterial, Mesh } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';
+import * as CANNON from 'cannon-es';
 
 import SeedScene from '../scenes/SeedScene';
 
@@ -15,10 +16,27 @@ class Flower extends Group {
         spin: () => void;
         twirl: number;
     };
+    body: CANNON.Body;
 
-    constructor(parent: SeedScene) {
+    constructor(parent: SeedScene, show_wireframe = false) {
         // Call parent Group() constructor
         super();
+
+        // Init body
+        this.body = new CANNON.Body({
+            mass: 1,
+            shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
+            position: new CANNON.Vec3(0, 5, 0),
+        });
+        parent.world.addBody(this.body);
+
+        // Wireframe mesh for visual debugging
+        if (show_wireframe){
+            const geometry = new BoxGeometry(1, 1, 1);
+            const material = new MeshBasicMaterial({ color: 0x000000, wireframe: true });
+            const wireframe = new Mesh(geometry, material);
+            this.add(wireframe);
+        }
 
         // Init state
         this.state = {
@@ -51,10 +69,10 @@ class Flower extends Group {
         // Use timing library for more precice "bounce" animation
         // TweenJS guide: http://learningthreejs.com/blog/2011/08/17/tweenjs-for-smooth-animation/
         // Possible easings: http://sole.github.io/tween.js/examples/03_graphs.html
-        const jumpUp = new TWEEN.Tween(this.position)
-            .to({ y: this.position.y + 1 }, 300)
+        const jumpUp = new TWEEN.Tween(this.body.position)
+            .to({ y: this.body.position.y + 1 }, 300)
             .easing(TWEEN.Easing.Quadratic.Out);
-        const fallDown = new TWEEN.Tween(this.position)
+        const fallDown = new TWEEN.Tween(this.body.position)
             .to({ y: 0 }, 300)
             .easing(TWEEN.Easing.Quadratic.In);
 
@@ -68,16 +86,20 @@ class Flower extends Group {
     update(timeStamp: number): void {
         if (this.state.bob) {
             // Bob back and forth
-            this.rotation.z = 0.05 * Math.sin(timeStamp / 300);
+            this.body.quaternion.setFromEuler(0, 0, 0.05 * Math.sin(timeStamp / 300), 'XYZ');
         }
         if (this.state.twirl > 0) {
             // Lazy implementation of twirl
             this.state.twirl -= Math.PI / 8;
-            this.rotation.y += Math.PI / 8;
+            this.body.quaternion.setFromEuler(0, this.state.twirl, 0, 'XYZ');
         }
 
         // Advance tween animations, if any exist
         TWEEN.update();
+
+        // Update physics
+        this.position.copy(this.body.position as any);
+        this.quaternion.copy(this.body.quaternion as any);
     }
 }
 
