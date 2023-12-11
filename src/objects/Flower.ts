@@ -72,12 +72,6 @@ class Flower extends Group {
         const jumpUp = new TWEEN.Tween(this.body.position)
             .to({ y: this.body.position.y + 1 }, 300)
             .easing(TWEEN.Easing.Quadratic.Out);
-        const fallDown = new TWEEN.Tween(this.body.position)
-            .to({ y: 0 }, 300)
-            .easing(TWEEN.Easing.Quadratic.In);
-
-        // Fall down after jumping up
-        jumpUp.onComplete(() => fallDown.start());
 
         // Start animation
         jumpUp.start();
