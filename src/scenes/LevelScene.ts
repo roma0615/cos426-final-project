@@ -3,9 +3,10 @@ import { Scene, Color } from 'three';
 
 import * as CANNON from 'cannon-es';
 
-import Flower from '../objects/Flower';
+import Player from '../objects/Player';
 import Land from '../objects/Land';
 import BasicLights from '../lights/BasicLights';
+import FPSControls from '../objects/FPSControls';
 
 // Define an object type which describes each object in the update list
 type UpdateChild = {
@@ -13,12 +14,13 @@ type UpdateChild = {
     update?: (timeStamp: number) => void;
 };
 
-class SeedScene extends Scene {
+class LevelScene extends Scene {
     // Define the type of the state field
     state: {
         gui: dat.GUI;
         rotationSpeed: number;
         updateList: UpdateChild[];
+        activePlayer?: Player;
     };
     timeStep: number;
     world: CANNON.World;
@@ -38,6 +40,7 @@ class SeedScene extends Scene {
             gui: new dat.GUI(), // Create GUI for scene
             rotationSpeed: 1,
             updateList: [],
+            activePlayer: undefined,
         };
 
         // Set background to a nice color
@@ -45,9 +48,14 @@ class SeedScene extends Scene {
 
         // Add meshes to scene
         const land = new Land(this, true);
-        const flower = new Flower(this, true);
+        const player1 = new Player(this, true);
+        // const player2 = new Player(this, false); // TODO figure out how to initialize in diff place
         const lights = new BasicLights();
-        this.add(land, flower, lights);
+
+        // update state
+        this.state.activePlayer = player1;
+
+        this.add(land, player1, lights);
 
         // Populate GUI
         this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
@@ -61,9 +69,13 @@ class SeedScene extends Scene {
         this.state.updateList.push(object);
     }
 
+    getActivePlayer(): Player | undefined {
+        return this.state.activePlayer;
+    }
+
     update(timeStamp: number): void {
-        const { rotationSpeed, updateList } = this.state;
-        this.rotation.y = (rotationSpeed * timeStamp) / 10000;
+        const { updateList } = this.state;
+        // this.rotation.y = (rotationSpeed * timeStamp) / 10000;
         this.world.step(this.timeStep);
 
         // Call update for each object in the updateList
@@ -75,4 +87,4 @@ class SeedScene extends Scene {
     }
 }
 
-export default SeedScene;
+export default LevelScene;
