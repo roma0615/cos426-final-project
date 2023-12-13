@@ -10,81 +10,42 @@ import { cannonVecToThree } from '../utils';
 class FPSControls {
     // Define the type of the state field
     state: {
-        cameraAngle: {
-            x: number;
-            y: number;
-        }
         velocityFactor: number;
-        jumpVelocity: number;
-        quat: Quaternion;
-
-        walkSpeed: number;
         keysPressed: Set<string>;
-        canJump: boolean;
-
-        contactNormal: CANNON.Vec3;
         lastTimeStamp: number;
     };
+    scene: LevelScene;
     camera: Camera;
     cameraDistance: number;
-    // body is the body that the camera controls and is tethered to
-    body: CANNON.Body;
 
-    constructor (camera: Camera, cannonBody: CANNON.Body) {
+    constructor (camera: Camera, scene: LevelScene) {
         // if (cannonBody === undefined) return;
+        this.scene = scene;
         this.camera = camera;
         this.cameraDistance = 10;
         this.state = {
-            cameraAngle: {
-                x: -Math.PI / 2,
-                y: Math.PI / 4,
-            },
-            walkSpeed: 0.15,
             velocityFactor: 0.2,
-            jumpVelocity: 7.5,
-            quat: new Quaternion(),
             keysPressed: new Set(), // keep track of keys pressed
-            canJump: false,
-            contactNormal: new CANNON.Vec3(),
             lastTimeStamp: 0,
         }
-        this.body = cannonBody;
-
-        // groups for controlling camera rotation
-        // this.pitchObject = new Group();
-        // this.pitchObject.add(camera); // breaks things?
-
-        // this.yawObject = new Group();
-        // this.yawObject.add(this.pitchObject);
 
         // setup event listeners
-        this.body.addEventListener('collide', this.collideHandler.bind(this));
         document.addEventListener("mousemove", this.onMouseMove.bind(this));
         document.addEventListener("keydown", this.onKeyDown.bind(this));
         document.addEventListener("keyup", this.onKeyUp.bind(this));
     }
 
-    collideHandler(e: any) {
-        const upAxis = new CANNON.Vec3(0, 1, 0);
-        const contact = e.contact;
-
-        // contact.bi and contact.bj are the colliding bodies, and contact.ni is the collision normal.
-        // We do not yet know which one is which! const's check.
-        if (contact.bi.id == this.body.id)
-            // bi is the player body, flip the contact normal
-            contact.ni.negate(this.state.contactNormal);
-        else this.state.contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
-
-        // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
-        if (this.state.contactNormal.dot(upAxis) > 0.5)
-            // Use a "good" threshold value between 0 and 1 here!
-            this.state.canJump = true;
+    getPlayer() {
+        return this.scene.getActivePlayer();
+    }
+    getBody() {
+        return this.scene.getActivePlayer().body;
     }
 
     onMouseMove (event: MouseEvent) {
-        this.state.cameraAngle.x -= event.movementX * 0.002;
-        this.state.cameraAngle.y -= event.movementY * 0.002;
-        this.state.cameraAngle.y = Math.max(0.1, Math.min(this.state.cameraAngle.y, Math.PI - 0.1));
+        this.getPlayer().state.cameraAngle.x -= event.movementX * 0.002;
+        this.getPlayer().state.cameraAngle.y -= event.movementY * 0.002;
+        this.getPlayer().state.cameraAngle.y = Math.max(0.1, Math.min(this.getPlayer().state.cameraAngle.y, Math.PI - 0.1));
     }
 
     onKeyDown (event: KeyboardEvent) {
@@ -101,12 +62,6 @@ class FPSControls {
 
     getObject() {
         return this.camera;
-    };
-
-    getDirection() {
-        const targetVec = new Vector3(0, 0, -1);
-        targetVec.applyQuaternion(this.state.quat);
-        return targetVec;
     };
 
     // Moves the camera to the Cannon.js object position and adds velocity to the object if the run key is down
@@ -134,19 +89,19 @@ class FPSControls {
         if (this.state.keysPressed.has("d")) {
             inputVelocity.z = this.state.velocityFactor * delta;
         }
-        if (this.state.keysPressed.has(" ") && this.state.canJump) {
+        if (this.state.keysPressed.has(" ") && this.getPlayer().state.canJump) {
             // jump and remove
             // apply impluse vertically
-            this.body.velocity.y += this.state.jumpVelocity;
-            this.state.canJump = false;
+            this.getBody().velocity.y += this.getPlayer().state.jumpVelocity;
+            this.getPlayer().state.canJump = false;
         }
 
 
         // put camera behind the player
-        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
+        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.getPlayer().state.cameraAngle.y, this.getPlayer().state.cameraAngle.x);
         // rotate body to look at camera
-        this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.state.cameraAngle.x + Math.PI / 2);
-        const bodyPos = cannonVecToThree(this.body.position);
+        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
+        const bodyPos = cannonVecToThree(this.getBody().position);
         this.camera.position.add(bodyPos);
         this.camera.lookAt(bodyPos);
 
@@ -155,14 +110,17 @@ class FPSControls {
         this.camera.getWorldDirection(cameraWorldDir);
         cameraWorldDir.setY(0).normalize();
         // console.log("camera world dir:", cameraWorldDir);
-        this.state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDir);
+        this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDir);
         // inputVelocity.applyAxisAngle(new Vector3(0, 1, 0));
-        inputVelocity.applyQuaternion(this.state.quat);
-        inputVelocity.normalize().multiplyScalar(this.state.walkSpeed);
+        inputVelocity.applyQuaternion(this.getPlayer().state.quat);
+        inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
 
         // shift the position of the object by inputVelocity
-        this.body.position.x += inputVelocity.x;
-        this.body.position.z += inputVelocity.z;
+        this.getBody().position.x += inputVelocity.x;
+        this.getBody().position.z += inputVelocity.z;
+
+        // handle animation
+        this.getPlayer().determineAnimation(inputVelocity);
 
         this.state.lastTimeStamp = timeStamp;
     };

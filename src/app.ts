@@ -40,7 +40,7 @@ canvas.addEventListener('click', async () => {
 // controls.minDistance = 4;
 // controls.maxDistance = 16;
 // controls.update();
-const controls = new FPSControls(camera, scene.getActivePlayer()!.body); // todo: update active player whenever we hit x
+const controls = new FPSControls(camera, scene); // todo: update active player whenever we hit x
 // const pointerlock = new PointerLockControls(camera, renderer.domElement);
 
 
