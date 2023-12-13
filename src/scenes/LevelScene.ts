@@ -52,10 +52,8 @@ class LevelScene extends Scene {
 
         // Add meshes to scene
         const land = new Land(this, true);
-        const sphere = new Mesh(new SphereGeometry(0.3, 12, 12));
-        sphere.position.set(5, 0, 0);
-        const player1 = new Player(this, true, true, new CANNON.Vec3(0, 5, 0), this.clock);
-        const player2 = new Player(this, false, true, new CANNON.Vec3(0, 5, 5), this.clock); // TODO figure out how to initialize in diff place
+        const player1 = new Player(this, true, new CANNON.Vec3(0, 5, 0), this.clock); // TODO make where the player spawns encoded in the level
+        const player2 = new Player(this, true, new CANNON.Vec3(0, 5, 5), this.clock);
         const lights = new BasicLights();
 
         // update state
@@ -63,10 +61,7 @@ class LevelScene extends Scene {
         this.state.players.push(player2);
         this.state.activePlayer = 0;
 
-        this.add(land, sphere, player1, player2, lights);
-
-        // Populate GUI
-        this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
+        this.add(land, player1, player2, lights);
 
         window.addEventListener('keydown', this.keydownHandler.bind(this), false);
     }

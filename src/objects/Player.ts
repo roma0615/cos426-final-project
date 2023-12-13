@@ -1,5 +1,6 @@
 import { Group, BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Quaternion, AnimationMixer, AnimationClip, Clock, AnimationAction } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
@@ -20,7 +21,6 @@ class Player extends Group {
             x: number;
             y: number;
         };
-        isActive: boolean;
         contactNormal: CANNON.Vec3;
         canJump: boolean;
         quat: Quaternion;
@@ -32,7 +32,6 @@ class Player extends Group {
 
     constructor(
         parent: LevelScene,
-        isActive: boolean,
         show_wireframe = false,
         initialPos = new CANNON.Vec3(),
         clock: Clock
@@ -48,7 +47,6 @@ class Player extends Group {
                 x: -Math.PI / 2,
                 y: Math.PI / 4,
             },
-            isActive, // whether the player is being controlled
             contactNormal: new CANNON.Vec3(),
             canJump: false,
             quat: new Quaternion(),
@@ -85,12 +83,13 @@ class Player extends Group {
 
         this.name = 'player' + Math.floor(Math.random() * 10000);
         loader.load(MODEL, (gltf) => {
-            gltf.scene.position.y -= 0.5; // so bottom of mesh aligns with bottom of box
-            this.add(gltf.scene);
+            const scene = clone(gltf.scene); // clone so that each player has their own mesh, anims, etc
+            scene.position.y -= 0.5; // so bottom of mesh aligns with bottom of box
+            this.add(scene); // unique scene object for this
 
             // animations
-            this.anim.mixer = new AnimationMixer(gltf.scene);
-            this.anim.clips = gltf.animations;
+            this.anim.mixer = new AnimationMixer(scene);
+            this.anim.clips = gltf.animations; // don't have to copy clips between object instances
             const idleAnim = AnimationClip.findByName(this.anim.clips, 'idle');
             this.anim.action = this.anim.mixer.clipAction(idleAnim);
             this.anim.action.play(); // start with idle
@@ -137,15 +136,19 @@ class Player extends Group {
             this.state.canJump = true;
     }
 
+    switchToAnim(newAnim: string) {
+        this.anim.action?.stop(); // stop old action
+        const clip = AnimationClip.findByName(this.anim.clips, newAnim);
+        this.anim.action = this.anim.mixer?.clipAction(clip);
+        this.anim.action?.play(); // play this new action (no transition rn)
+    }
+
     determineAnimation(inputVel: Vector3) {
         let newAnim = undefined;
         if (inputVel.length() > 0.1 && this.anim.action?.getClip().name == "idle") newAnim = "walk"; // start walking
         if (inputVel.length() <= 0.1 && this.anim.action?.getClip().name == "walk") newAnim = "idle"; // start idling
         if (newAnim === undefined) return;
-        this.anim.action?.stop(); // stop old action
-        const clip = AnimationClip.findByName(this.anim.clips, newAnim);
-        this.anim.action = this.anim.mixer?.clipAction(clip);
-        this.anim.action?.play(); // play this new action (no transition rn)
+        this.switchToAnim(newAnim);
     }
 
     update(timeStamp: number): void {
