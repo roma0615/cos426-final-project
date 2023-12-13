@@ -11,6 +11,7 @@ import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
 import LevelScene from './scenes/LevelScene';
 import FPSControls from './objects/FPSControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 
 // Initialize core ThreeJS components
 const scene = new LevelScene();
@@ -18,7 +19,7 @@ const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
 // Set up camera
-camera.position.set(6, 3, -10);
+camera.position.set(-6, 3, 0);
 camera.lookAt(new Vector3(0, 0, 0));
 
 // Set up renderer, canvas, and minor CSS adjustments
@@ -28,6 +29,9 @@ canvas.style.display = 'block'; // Removes padding below canvas
 document.body.style.margin = '0'; // Removes margin around page
 document.body.style.overflow = 'hidden'; // Fix scrolling
 document.body.appendChild(canvas);
+canvas.addEventListener('click', async () => {
+    await canvas.requestPointerLock();
+});
 
 // Set up controls
 // const controls = new OrbitControls(camera, canvas);
@@ -36,7 +40,9 @@ document.body.appendChild(canvas);
 // controls.minDistance = 4;
 // controls.maxDistance = 16;
 // controls.update();
-const controls = new FPSControls(camera, scene.getActivePlayer()!.body);
+const controls = new FPSControls(camera, scene.getActivePlayer()!.body); // todo: update active player whenever we hit x
+// const pointerlock = new PointerLockControls(camera, renderer.domElement);
+
 
 // Render loop
 const onAnimationFrameHandler = (timeStamp: number) => {

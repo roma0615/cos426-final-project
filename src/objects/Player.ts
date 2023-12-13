@@ -46,6 +46,7 @@ class Player extends Group {
 
         this.name = 'player' + Math.floor(Math.random() * 10000);
         loader.load(MODEL, (gltf) => {
+            gltf.scene.position.y -= 0.5;
             this.add(gltf.scene);
         });
 

@@ -1,5 +1,5 @@
 import dat from 'dat.gui';
-import { Scene, Color } from 'three';
+import { Scene, Color, Sphere, Vector3, SphereGeometry, Mesh } from 'three';
 
 import * as CANNON from 'cannon-es';
 
@@ -32,7 +32,7 @@ class LevelScene extends Scene {
         // Init world
         this.timeStep = 1 / 60;
         this.world = new CANNON.World({
-            gravity: new CANNON.Vec3(0, -9.82, 0),
+            gravity: new CANNON.Vec3(0, -9.82, 0), // TODO: this should somehow be player specific.. maybe two worlds one for each player?
         }); 
 
         // Init state
@@ -48,14 +48,16 @@ class LevelScene extends Scene {
 
         // Add meshes to scene
         const land = new Land(this, true);
-        const player1 = new Player(this, true);
+        const sphere = new Mesh(new SphereGeometry(0.3, 12, 12));
+        sphere.position.set(5, 0, 0);
+        const player1 = new Player(this, true, true);
         // const player2 = new Player(this, false); // TODO figure out how to initialize in diff place
         const lights = new BasicLights();
 
         // update state
         this.state.activePlayer = player1;
 
-        this.add(land, player1, lights);
+        this.add(land, sphere, player1, lights);
 
         // Populate GUI
         this.state.gui.add(this.state, 'rotationSpeed', -5, 5);
