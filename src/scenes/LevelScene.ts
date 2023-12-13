@@ -52,8 +52,8 @@ class LevelScene extends Scene {
 
         // Add meshes to scene
         const land = new Land(this, true);
-        const player1 = new Player(this, true, new CANNON.Vec3(0, 5, 0), this.clock); // TODO make where the player spawns encoded in the level
-        const player2 = new Player(this, true, new CANNON.Vec3(0, 5, 5), this.clock);
+        const player1 = new Player(this, true, new CANNON.Vec3(0, 15, 0), this.clock); // TODO make where the player spawns encoded in the level
+        const player2 = new Player(this, true, new CANNON.Vec3(0, 15, 5), this.clock);
         const lights = new BasicLights();
 
         // update state
