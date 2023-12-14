@@ -6,7 +6,7 @@
  * handles window resizes.
  *
  */
-import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Vector3, SRGBColorSpace, LinearSRGBColorSpace } from 'three';
 
 import LevelScene from './scenes/LevelScene';
 import FPSControls from './objects/FPSControls';
@@ -24,6 +24,7 @@ camera.lookAt(new Vector3(0, 0, 0));
 
 // Set up renderer, canvas, and minor CSS adjustments
 renderer.setPixelRatio(window.devicePixelRatio);
+renderer.outputColorSpace = SRGBColorSpace;
 const canvas = renderer.domElement; // draw to canvas
 canvas.style.display = 'block'; // Removes padding below canvas
 document.body.style.margin = '0'; // Removes margin around page

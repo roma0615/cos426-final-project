@@ -83,7 +83,17 @@ class LevelScene extends Scene {
             offset: new Vector3(10, 0, 0)
         });
 
-        this.add(land, player1, player2, lights, pad);
+        // cube for pushing into place
+        const cube = new LevelObject(this, "cube", { 
+            mass: 5,
+            collideCallback: (self, e) => {
+                const otherBody = e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
+                console.log("Other body", otherBody);
+            },
+            offset: new Vector3(6, 0, 2)
+        });
+
+        this.add(land, cube, player1, player2, lights, pad);
 
         window.addEventListener(
             'keydown',

@@ -1,4 +1,4 @@
-import { Group, BoxGeometry, MeshBasicMaterial, Mesh, Quaternion, Vector3, Camera, Euler } from 'three';
+import { MathUtils, Group, BoxGeometry, MeshBasicMaterial, Mesh, Quaternion, Vector3, Camera, Euler } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
@@ -13,6 +13,10 @@ class FPSControls {
         velocityFactor: number;
         keysPressed: Set<string>;
         lastTimeStamp: number;
+        cameraAngle: {
+            x: number;
+            y: number;
+        }
     };
     scene: LevelScene;
     camera: Camera;
@@ -27,6 +31,10 @@ class FPSControls {
             velocityFactor: 0.2,
             keysPressed: new Set(), // keep track of keys pressed
             lastTimeStamp: 0,
+            cameraAngle: {
+                x: -Math.PI / 2,
+                y: Math.PI / 4,
+            }
         }
 
         // setup event listeners
@@ -98,12 +106,14 @@ class FPSControls {
 
 
         // put camera behind the player
-        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.getPlayer().state.cameraAngle.y, this.getPlayer().state.cameraAngle.x);
+        this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.15);
+        this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.15);
+        // this.getPlayer().state.cameraAngle.x;
+
+        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
+        // this.camera.position.lerp(desiredPos, timeStamp <= 2000 ? 1 : 0.01);
         // rotate body to look at camera
-        // this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
-        // rotate body to look halfway between camera and current angle
-        console.log(this.getPlayer().body.quaternion);
-        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), ((this.getPlayer().state.cameraAngle.x + Math.PI / 2) + (this.getPlayer().body.quaternion.y + Math.PI / 2) / 2));
+        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
         const bodyPos = cannonVecToThree(this.getBody().position);
         this.camera.position.add(bodyPos);
         this.camera.lookAt(bodyPos);
