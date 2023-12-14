@@ -6,6 +6,7 @@ import * as CANNON from 'cannon-es';
 import Player from '../objects/Player';
 import Land from '../objects/Land';
 import BasicLights from '../lights/BasicLights';
+import LevelObject from '../objects/LevelObject';
 
 // Define an object type which describes each object in the update list
 type UpdateChild = {
@@ -31,12 +32,12 @@ class LevelScene extends Scene {
         super();
 
         this.clock = new Clock();
-        
+
         // Init world
         this.timeStep = 1 / 60;
         this.world = new CANNON.World({
             gravity: new CANNON.Vec3(0, -9.82, 0), // TODO: this should somehow be player specific.. maybe two worlds one for each player?
-        }); 
+        });
 
         // Init state
         this.state = {
@@ -52,8 +53,20 @@ class LevelScene extends Scene {
 
         // Add meshes to scene
         const land = new Land(this, true);
-        const player1 = new Player(this, true, new CANNON.Vec3(0, 15, 0), this.clock); // TODO make where the player spawns encoded in the level
-        const player2 = new Player(this, true, new CANNON.Vec3(0, 15, 5), this.clock);
+        const player1 = new Player(
+            0,
+            this,
+            true,
+            new CANNON.Vec3(0, 15, 0),
+            this.clock
+        ); // TODO make where the player spawns encoded in the level
+        const player2 = new Player(
+            1,
+            this,
+            true,
+            new CANNON.Vec3(0, 15, 5),
+            this.clock
+        );
         const lights = new BasicLights();
 
         // update state
@@ -61,9 +74,22 @@ class LevelScene extends Scene {
         this.state.players.push(player2);
         this.state.activePlayer = 0;
 
-        this.add(land, player1, player2, lights);
+        // start pad
+        const pad = new LevelObject(this, "landing_pad", { 
+            collideCallback: (self, e) => {
+                const otherBody = e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
+                console.log("Other body", otherBody);
+            },
+            offset: new Vector3(10, 0, 0)
+        });
 
-        window.addEventListener('keydown', this.keydownHandler.bind(this), false);
+        this.add(land, player1, player2, lights, pad);
+
+        window.addEventListener(
+            'keydown',
+            this.keydownHandler.bind(this),
+            false
+        );
     }
 
     addBodyToWorld(object: CANNON.Body): void {
@@ -91,7 +117,7 @@ class LevelScene extends Scene {
         }
     }
     
-    keydownHandler (event) {
+    keydownHandler (event: any) {
         if (event.key == "x") { // x to switch characters
             this.state.activePlayer = 1 - this.state.activePlayer;
         }

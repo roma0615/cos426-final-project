@@ -7,7 +7,8 @@ import * as CANNON from 'cannon-es';
 import LevelScene from '../scenes/LevelScene';
 
 // Import player model as a URL using Vite's syntax
-import MODEL from './player.glb?url';
+import MODEL1 from './player1.glb?url';
+import MODEL2 from './player2.glb?url';
 
 class Player extends Group {
     // Define the type of the state field
@@ -31,6 +32,7 @@ class Player extends Group {
     clock: Clock;
 
     constructor(
+        index: number,
         parent: LevelScene,
         show_wireframe = false,
         initialPos = new CANNON.Vec3(),
@@ -50,7 +52,7 @@ class Player extends Group {
             contactNormal: new CANNON.Vec3(),
             canJump: false,
             quat: new Quaternion(),
-            walkSpeed: 0.2,
+            walkSpeed: 0.1,
             jumpVelocity: 7.5,
         };
 
@@ -81,7 +83,7 @@ class Player extends Group {
             action: undefined,
         };
 
-        this.name = 'player' + Math.floor(Math.random() * 10000);
+        const MODEL = index == 0 ? MODEL1 : MODEL2;
         loader.load(MODEL, (gltf) => {
             const scene = clone(gltf.scene); // clone so that each player has their own mesh, anims, etc
             scene.position.y -= 0.5; // so bottom of mesh aligns with bottom of box
@@ -89,6 +91,7 @@ class Player extends Group {
 
             // animations
             this.anim.mixer = new AnimationMixer(scene);
+            console.log(this.anim.mixer)
             this.anim.clips = gltf.animations; // don't have to copy clips between object instances
             const idleAnim = AnimationClip.findByName(this.anim.clips, 'idle');
             this.anim.action = this.anim.mixer.clipAction(idleAnim);
@@ -123,11 +126,16 @@ class Player extends Group {
         const upAxis = new CANNON.Vec3(0, 1, 0);
         const contact = e.contact;
 
+        console.log(contact);
+        let otherBody = contact.bi;
+
         // contact.bi and contact.bj are the colliding bodies, and contact.ni is the collision normal.
         // We do not yet know which one is which! const's check.
-        if (contact.bi.id == this.body.id)
+        if (contact.bi.id == this.body.id) {
             // bi is the player body, flip the contact normal
             contact.ni.negate(this.state.contactNormal);
+            otherBody = contact.bj;
+        }
         else this.state.contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
 
         // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.

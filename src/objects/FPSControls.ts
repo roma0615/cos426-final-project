@@ -4,7 +4,7 @@ import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
 import LevelScene from '../scenes/LevelScene';
-import { cannonVecToThree } from '../utils';
+import { cannonVecToThree, threeVectorToCannon } from '../utils';
 
 // adapted from https://github.com/schteppe/cannon.js/blob/master/examples/js/PointerLockControls.js#L5
 class FPSControls {
@@ -100,7 +100,10 @@ class FPSControls {
         // put camera behind the player
         this.camera.position.setFromSphericalCoords(this.cameraDistance, this.getPlayer().state.cameraAngle.y, this.getPlayer().state.cameraAngle.x);
         // rotate body to look at camera
-        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
+        // this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
+        // rotate body to look halfway between camera and current angle
+        console.log(this.getPlayer().body.quaternion);
+        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), ((this.getPlayer().state.cameraAngle.x + Math.PI / 2) + (this.getPlayer().body.quaternion.y + Math.PI / 2) / 2));
         const bodyPos = cannonVecToThree(this.getBody().position);
         this.camera.position.add(bodyPos);
         this.camera.lookAt(bodyPos);
@@ -116,6 +119,8 @@ class FPSControls {
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
 
         // shift the position of the object by inputVelocity
+        // this.getBody().applyForce(threeVectorToCannon(inputVelocity));
+        // this.getBody().force.normalize().
         this.getBody().position.x += inputVelocity.x;
         this.getBody().position.z += inputVelocity.z;
 
