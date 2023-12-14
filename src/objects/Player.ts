@@ -126,7 +126,6 @@ class Player extends Group {
         const upAxis = new CANNON.Vec3(0, 1, 0);
         const contact = e.contact;
 
-        console.log(contact);
         let otherBody = contact.bi;
 
         // contact.bi and contact.bj are the colliding bodies, and contact.ni is the collision normal.
