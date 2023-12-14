@@ -14,6 +14,13 @@ type UpdateChild = {
     update?: (timeStamp: number) => void;
 };
 
+export enum COLLISION_GROUPS {
+    PLAYER = 1,
+    SCENE = 2,
+    OBJECTS = 4,
+    // GROUP4 = 8
+}
+
 class LevelScene extends Scene {
     // Define the type of the state field
     state: {
@@ -85,7 +92,7 @@ class LevelScene extends Scene {
 
         // cube for pushing into place
         const cube = new LevelObject(this, "cube", { 
-            mass: 5,
+            mass: 1,
             collideCallback: (self, e) => {
                 const otherBody = e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
                 console.log("Other body", otherBody);

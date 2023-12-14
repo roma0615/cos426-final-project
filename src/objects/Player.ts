@@ -4,7 +4,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
-import LevelScene from '../scenes/LevelScene';
+import LevelScene, { COLLISION_GROUPS } from '../scenes/LevelScene';
 
 // Import player model as a URL using Vite's syntax
 import MODEL1 from './player1.glb?url';
@@ -61,6 +61,8 @@ class Player extends Group {
             mass: 1,
             shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
             position: initialPos,
+            collisionFilterGroup: COLLISION_GROUPS.PLAYER,
+            collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS
         });
         parent.world.addBody(this.body);
 

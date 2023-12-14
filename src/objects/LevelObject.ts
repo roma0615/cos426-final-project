@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from 'three-to-cannon';
 
-import LevelScene from '../scenes/LevelScene';
+import LevelScene, { COLLISION_GROUPS } from '../scenes/LevelScene';
 
 // Import land model as a URL using Vite's syntax
 import MODEL from './landing_pad.glb?url';
@@ -47,6 +47,8 @@ class LevelObject extends Group {
             type: this.bodyType,
             mass: this.mass,
             position: this.initialOffset as any,
+            collisionFilterGroup: COLLISION_GROUPS.OBJECTS,
+            collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS
         });
         // this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         parent.world.addBody(this.body);

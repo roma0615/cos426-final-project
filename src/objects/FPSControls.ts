@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
-import LevelScene from '../scenes/LevelScene';
+import LevelScene, { COLLISION_GROUPS } from '../scenes/LevelScene';
 import { cannonVecToThree, threeVectorToCannon } from '../utils';
 
 // adapted from https://github.com/schteppe/cannon.js/blob/master/examples/js/PointerLockControls.js#L5
