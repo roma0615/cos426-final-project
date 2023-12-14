@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from "three-to-cannon";
 
-import LevelScene, { COLLISION_GROUPS } from '../scenes/LevelScene';
+import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 
 // Import land model as a URL using Vite's syntax
 import MODEL from './level1.glb?url';

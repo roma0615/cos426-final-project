@@ -4,7 +4,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
-import LevelScene, { COLLISION_GROUPS } from '../scenes/LevelScene';
+import BaseScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 
 // Import player model as a URL using Vite's syntax
 import MODEL1 from './player1.glb?url';
@@ -27,16 +27,18 @@ class Player extends Group {
         quat: Quaternion;
         walkSpeed: number;
         jumpVelocity: number;
+
+        gravity: CANNON.Vec3;
     };
     body: CANNON.Body;
     clock: Clock;
 
     constructor(
         index: number,
-        parent: LevelScene,
-        show_wireframe = false,
+        parent: BaseScene,
         initialPos = new CANNON.Vec3(),
-        clock: Clock
+        clock: Clock,
+        show_wireframe = true,
     ) {
         // Call parent Group() constructor
         super();
@@ -44,8 +46,8 @@ class Player extends Group {
 
         // Init state
         this.state = {
-            // spin: () => this.spin(), // or this.spin.bind(this)
             cameraAngle: {
+                // todo replace this with a quaternion so we don't get weird jumping
                 x: -Math.PI / 2,
                 y: Math.PI / 4,
             },
@@ -54,6 +56,7 @@ class Player extends Group {
             quat: new Quaternion(),
             walkSpeed: 0.1,
             jumpVelocity: 7.5,
+            gravity: new CANNON.Vec3(0, -9.82, 0),
         };
 
         // Init body
@@ -65,6 +68,8 @@ class Player extends Group {
             collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS
         });
         parent.world.addBody(this.body);
+        // Add self to parent's update list
+        parent.addToUpdateList(this);
 
         // Wireframe mesh for visual debugging
         if (show_wireframe) {
@@ -100,12 +105,6 @@ class Player extends Group {
             this.anim.action.play(); // start with idle
         });
 
-        // Add self to parent's update list
-        parent.addToUpdateList(this);
-
-        // Populate GUI
-        // this.state.gui.add(this.state, 'spin');
-
         // event handler for colliding with world
         this.body.addEventListener('collide', this.collideHandler.bind(this));
     }
@@ -139,10 +138,13 @@ class Player extends Group {
         }
         else this.state.contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
 
+        console.log("Collide handler activated. Other body is", otherBody)
+
         // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
-        if (this.state.contactNormal.dot(upAxis) > 0.5)
+        if (this.state.contactNormal.dot(upAxis) > 0.5) {
             // Use a "good" threshold value between 0 and 1 here!
             this.state.canJump = true;
+        }
     }
 
     switchToAnim(newAnim: string) {
@@ -166,6 +168,8 @@ class Player extends Group {
         //     this.state.twirl -= Math.PI / 8;
         //     this.body.quaternion.setFromEuler(0, this.state.twirl, 0, 'XYZ');
         // }
+        // this.body.applyForce(this.state.gravity);
+        // this.body.applyForce(new CANNON.Vec3(0, -1, 0));
 
         // // Advance tween animations, if any exist
         // TWEEN.update();

@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from 'three-to-cannon';
 
-import LevelScene, { COLLISION_GROUPS } from '../scenes/LevelScene';
+import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 
 // Import land model as a URL using Vite's syntax
 import MODEL from './landing_pad.glb?url';
@@ -12,6 +12,8 @@ import { threeVectorToCannon } from '../utils';
 interface Options {
     offset: Vector3;
     bodyType: CANNON.BodyType;
+    collisionGroup: COLLISION_GROUPS;
+    generateShapesOfChildren: boolean;
     mass: number;
     collideCallback: ((self: LevelObject, e: any) => void) | undefined;
     updateCallback: ((timeStamp: number) => void) | undefined;
@@ -25,6 +27,7 @@ class LevelObject extends Group {
     bodyType: CANNON.BodyType | undefined;
     initialOffset: Vector3;
     mass: number;
+    generateShapesOfChildren: boolean;
     collideCallback: ((self: LevelObject, e: any) => void) | undefined;
     updateCallback: ((timeStamp: number) => void) | undefined;
 
@@ -39,6 +42,8 @@ class LevelObject extends Group {
         this.initialOffset = options.offset || new Vector3(0, 0, 0);
         this.bodyType = options.bodyType || CANNON.Body.DYNAMIC;
         this.mass = options.mass || 1;
+        this.generateShapesOfChildren =
+            options.generateShapesOfChildren || false;
         this.collideCallback = options.collideCallback;
         this.updateCallback = options.updateCallback;
 
@@ -47,8 +52,9 @@ class LevelObject extends Group {
             type: this.bodyType,
             mass: this.mass,
             position: this.initialOffset as any,
-            collisionFilterGroup: COLLISION_GROUPS.OBJECTS,
-            collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS
+            collisionFilterGroup:
+                options.collisionGroup || COLLISION_GROUPS.OBJECTS,
+            collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS,
         });
         // this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         parent.world.addBody(this.body);
@@ -59,16 +65,13 @@ class LevelObject extends Group {
 
         loader.load(this.modelName, (gltf) => {
             this.add(gltf.scene);
-            const result = threeToCannon(gltf.scene);
-            const {
-                shape,
-                offset,
-                quaternion,
-            }: { shape: any; offset: CANNON.Vec3; quaternion: any } = result;
-            // const offset2 = offset.vadd(
-            //     threeVectorToCannon(this.initialOffset)
-            // );
-            this.body.addShape(shape, offset, quaternion);
+            const objs = this.generateShapesOfChildren ? gltf.scene.children : [gltf.scene];
+            console.log("Creating shape for", objs);
+            objs.forEach((c) => {
+                const result = threeToCannon(c);
+                const { shape, offset, quaternion } = result;
+                this.body.addShape(shape, offset, quaternion);
+            });
         });
 
         this.body.addEventListener('collide', this.collideHandler.bind(this));
@@ -87,6 +90,9 @@ class LevelObject extends Group {
 
         if (this.bodyType == CANNON.Body.DYNAMIC) {
             // copy cannon physics to group mesh
+            // custom gravity
+            // this.body.applyForce(new CANNON.Vec3(0, -9.82, 0)); // todo uncomment
+
             this.position.copy(this.body.position as any);
             this.quaternion.copy(this.body.quaternion as any);
         }

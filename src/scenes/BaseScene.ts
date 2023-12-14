@@ -21,7 +21,7 @@ export enum COLLISION_GROUPS {
     // GROUP4 = 8
 }
 
-class LevelScene extends Scene {
+class BaseScene extends Scene {
     // Define the type of the state field
     state: {
         gui: dat.GUI;
@@ -37,7 +37,6 @@ class LevelScene extends Scene {
     constructor() {
         // Call parent Scene() constructor
         super();
-
         this.clock = new Clock();
 
         // Init world
@@ -55,52 +54,12 @@ class LevelScene extends Scene {
             activePlayer: 0,
         };
 
+        // add lights
+        const lights = new BasicLights();
+        this.add(lights);
+
         // Set background to a nice color
         this.background = new Color(0x7ec0ee);
-
-        // Add meshes to scene
-        const land = new Land(this, true);
-        const player1 = new Player(
-            0,
-            this,
-            true,
-            new CANNON.Vec3(0, 15, 0),
-            this.clock
-        ); // TODO make where the player spawns encoded in the level
-        const player2 = new Player(
-            1,
-            this,
-            true,
-            new CANNON.Vec3(0, 15, 5),
-            this.clock
-        );
-        const lights = new BasicLights();
-
-        // update state
-        this.state.players.push(player1);
-        this.state.players.push(player2);
-        this.state.activePlayer = 0;
-
-        // start pad
-        const pad = new LevelObject(this, "landing_pad", { 
-            collideCallback: (self, e) => {
-                const otherBody = e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
-                console.log("Other body", otherBody);
-            },
-            offset: new Vector3(10, 0, 0)
-        });
-
-        // cube for pushing into place
-        const cube = new LevelObject(this, "cube", { 
-            mass: 1,
-            collideCallback: (self, e) => {
-                const otherBody = e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
-                console.log("Other body", otherBody);
-            },
-            offset: new Vector3(6, 0, 2)
-        });
-
-        this.add(land, cube, player1, player2, lights, pad);
 
         window.addEventListener(
             'keydown',
@@ -109,11 +68,8 @@ class LevelScene extends Scene {
         );
     }
 
-    addBodyToWorld(object: CANNON.Body): void {
-        this.world.addBody(object);
-    }
-
     addToUpdateList(object: UpdateChild): void {
+        console.log("Adding to update list:", object.update)
         this.state.updateList.push(object);
     }
 
@@ -123,7 +79,7 @@ class LevelScene extends Scene {
 
     update(timeStamp: number): void {
         const { updateList } = this.state;
-        // this.rotation.y = (rotationSpeed * timeStamp) / 10000;
+        // console.log("UPDATING each thing in update list:", updateList);
         this.world.step(this.timeStep);
 
         // Call update for each object in the updateList
@@ -141,4 +97,4 @@ class LevelScene extends Scene {
     }
 }
 
-export default LevelScene;
+export default BaseScene;

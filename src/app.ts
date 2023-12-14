@@ -8,13 +8,13 @@
  */
 import { WebGLRenderer, PerspectiveCamera, Vector3, SRGBColorSpace, LinearSRGBColorSpace } from 'three';
 
-import LevelScene from './scenes/LevelScene';
 import FPSControls from './objects/FPSControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
+import Level01Scene from './scenes/Level01Scene';
 
 // Initialize core ThreeJS components
-const scene = new LevelScene();
+const scene = new Level01Scene();
 const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
 
@@ -42,8 +42,6 @@ canvas.addEventListener('click', async () => {
 // controls.maxDistance = 16;
 // controls.update();
 const controls = new FPSControls(camera, scene); // todo: update active player whenever we hit x
-// const pointerlock = new PointerLockControls(camera, renderer.domElement);
-
 
 // Render loop
 const onAnimationFrameHandler = (timeStamp: number) => {
