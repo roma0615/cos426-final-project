@@ -2,7 +2,7 @@ import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from "three-to-cannon";
-import TWEEN from 'three/examples/jsm/libs/tween.module.js';
+import TWEEN, { Tween } from 'three/examples/jsm/libs/tween.module.js';
 
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 import { cannonVecToThree } from '../utils';
@@ -11,6 +11,8 @@ interface Options {
     start: CANNON.Vec3;
     end?: CANNON.Vec3 | undefined;
     size?: CANNON.Box;
+    repeat?: number | undefined;
+    easing?: any;
 }
 
 class Platform extends Group {
@@ -20,6 +22,9 @@ class Platform extends Group {
     start: CANNON.Vec3;
     end: CANNON.Vec3 | undefined;
     size: CANNON.Box;
+    repeat: number | undefined;
+    easing: any;
+    tween: Tween<any> | undefined;
 
     constructor(parent: LevelScene, name: string, options: Options) {
         // Call parent Group() constructor
@@ -29,6 +34,9 @@ class Platform extends Group {
         this.start = options.start;
         this.end = options.end;
         this.size = options.size || new CANNON.Box(new CANNON.Vec3(2, 0.25, 2))
+        this.repeat = options.repeat || 1;
+        this.easing = options.easing || TWEEN.Easing.Quadratic.Out;
+        this.tween = undefined;
 
         // Init cannon body
         this.parent = parent;
@@ -55,28 +63,35 @@ class Platform extends Group {
 
     update(timeStamp: number): void {
         // Update physics
-
         this.position.copy(this.body.position as any);
         this.quaternion.copy(this.body.quaternion as any);
 
+        console.log("UDatping twiens");
+        // update tweens
         TWEEN.update();
     }
 
-    triggerMovement() {
+    startMovement() {
         // begin the tween to take it from start to end
-        console.log("BEGINNING ANIAMTION");
         // Use timing library for more precice "bounce" animation
         // TweenJS guide: http://learningthreejs.com/blog/2011/08/17/tweenjs-for-smooth-animation/
         // Possible easings: http://sole.github.io/tween.js/examples/03_graphs.html
+        console.log("Start movement");
         if (this.end === undefined) return;
-        const movePlatform = new TWEEN.Tween(this.body.position)
+        if (this.tween !== undefined) return;
+        console.log("Creating tween.");
+        this.tween = new Tween(this.body.position)
             .to({ x: this.end.x, y: this.end.y, z: this.end.z}, 1000) // take a second to complete
             .to({ x: this.start.x, y: this.start.y, z: this.start.z}, 1000) // take a second to complete
-            .easing(TWEEN.Easing.Quadratic.Out);
+            .easing(this.easing);
+            // .repeat(this.repeat);
 
-        movePlatform.repeat(1000); // forever?
         // Start animation
-        movePlatform.start();
+        this.tween.start();
+    }
+
+    stopMovement() {
+        this.tween?.stop();
     }
 }
 

@@ -2,6 +2,7 @@ import dat from 'dat.gui';
 import { Scene, Color, Sphere, Vector3, SphereGeometry, Mesh, Clock } from 'three';
 
 import * as CANNON from 'cannon-es';
+import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 
 import Player from '../objects/Player';
 import Land from '../objects/Platform';
@@ -161,6 +162,7 @@ class BaseScene extends Scene {
         if (this.state.p1OnPad && this.state.p2OnPad) {
             this.winAction()
         }
+
     }
 
     winAction() {

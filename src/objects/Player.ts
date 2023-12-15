@@ -41,7 +41,7 @@ class Player extends Group {
         clock: Clock,
         initialPos = new CANNON.Vec3(),
         gravity = new CANNON.Vec3(0, -9.82, 0),
-        show_wireframe = true,
+        show_wireframe = false,
     ) {
         // Call parent Group() constructor
         super();

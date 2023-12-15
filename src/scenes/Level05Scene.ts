@@ -81,7 +81,7 @@ class Level05Scene extends BaseScene {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
                 if (otherObj instanceof Player) {
                     // trigger movement of the platform
-                    plat1.triggerMovement();
+                    plat1.startMovement();
                 }
             },
             offset: new Vector3(-13, 0, 11),
