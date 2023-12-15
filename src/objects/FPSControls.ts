@@ -148,7 +148,7 @@ class FPSControls {
         this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
 
         // rotate body to look at camera
-        // this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
+        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.state.cameraAngle.x + Math.PI / 2);
 
         // point camera at player
         const bodyPos = cannonVecToThree(this.getBody().position);
@@ -161,29 +161,13 @@ class FPSControls {
         // subtract the upAxis direction projection and then normalize
         const normGrav = cannonVecToThree(this.getPlayer().state.gravity);
         normGrav.normalize();
-        const correction = cameraWorldDir.projectOnVector(normGrav);
+        const correction = cameraWorldDir.clone().projectOnVector(normGrav);
         cameraWorldDir.sub(correction).normalize();
 
         // player's state.quat stores rotation to look in the dir that the camera is looking
         this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDir);
         inputVelocity.applyQuaternion(this.getPlayer().state.quat);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
-
-
-        // FORCES APPROACH
-        // shift the position of the object by inputVelocity
-        // this.getBody().applyForce(threeVectorToCannon(inputVelocity));
-        // if (this.getBody().force.length() > 70) {
-        //     this.getBody().force.normalize();
-        //     this.getBody().force.scale(70);
-        // }
-        // if (inputVelocity.length() < 0.025) {
-            // counter the net force walking
-            // const negForce = this.getBody().velocity.scale(-10);
-            // negForce.y = 0;
-            // this.getBody().applyForce(negForce);
-        // }
-        // this.getBody().force.normalize().
 
         // POSITION APPROACH
         this.getBody().position.x += inputVelocity.x;
