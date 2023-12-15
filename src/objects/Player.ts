@@ -47,6 +47,9 @@ class Player extends Group {
         this.scene = scene
         this.clock = clock;
 
+        // name
+        this.name = `player_${index}`
+
         // Init state
         this.state = {
             cameraAngle: {
@@ -58,7 +61,7 @@ class Player extends Group {
             canJump: false,
             quat: new Quaternion(),
             walkSpeed: 0.1,
-            jumpVelocity: 9,
+            jumpVelocity: 8,
             gravity: new CANNON.Vec3(0, -9.82, 0),
             gravityClock: new Clock(),
         };
@@ -66,8 +69,8 @@ class Player extends Group {
         // Init body
         this.body = new CANNON.Body({
             mass: 1,
-            linearDamping: 0.75,
-            angularDamping: 0.5,
+            // linearDamping: 0.75,
+            // angularDamping: 0.5,
             material: this.scene.materials.player,
             shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
             position: initialPos,
@@ -140,28 +143,30 @@ class Player extends Group {
         if (this.state.contactNormal.dot(upAxis) > 0.5) {
             // Use a "good" threshold value between 0 and 1 here!
             this.state.canJump = true;
-            this.body.linearDamping = 0.75;
+            // this.body.linearDamping = 0.75;
         }
     }
 
     switchToAnim(newAnim: string) {
-        this.anim.action?.stop(); // stop old action
-        const clip = AnimationClip.findByName(this.anim.clips, newAnim);
-        this.anim.action = this.anim.mixer?.clipAction(clip);
-        this.anim.action?.play(); // play this new action (no transition rn)
+        if (this.scene.getActivePlayer().name == this.name) {
+            this.anim.action?.stop(); // stop old action
+            const clip = AnimationClip.findByName(this.anim.clips, newAnim);
+            this.anim.action = this.anim.mixer?.clipAction(clip);
+            this.anim.action?.play(); // play this new action (no transition rn)
+        }
     }
 
     determineAnimation(inputVel: Vector3) {
         let newAnim = undefined;
-        if (inputVel.length() > 0.1 && this.anim.action?.getClip().name == "idle") newAnim = "walk"; // start walking
-        if (inputVel.length() <= 0.1 && this.anim.action?.getClip().name == "walk") newAnim = "idle"; // start idling
+        if (inputVel.length() > 0.025 && this.anim.action?.getClip().name == "idle") newAnim = "walk"; // start walking
+        if (inputVel.length() <= 0.025 && this.anim.action?.getClip().name == "walk") newAnim = "idle"; // start idling
         if (newAnim === undefined) return;
         this.switchToAnim(newAnim);
     }
 
     update(timeStamp: number): void {
         // apply the player's gravity
-        this.body.applyLocalForce(this.state.gravity);
+        this.body.applyForce(this.state.gravity);
 
         // Update physics
         this.position.copy(this.body.position as any);

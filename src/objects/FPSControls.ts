@@ -4,7 +4,9 @@ import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
-import { cannonVecToThree, threeVectorToCannon } from '../utils';
+import { EPS, cannonVecToThree, threeVectorToCannon } from '../utils';
+import BaseScene from '../scenes/BaseScene';
+import Game from '../Game';
 
 // adapted from https://github.com/schteppe/cannon.js/blob/master/examples/js/PointerLockControls.js#L5
 class FPSControls {
@@ -18,13 +20,13 @@ class FPSControls {
             y: number;
         }
     };
-    scene: LevelScene;
+    game: Game;
     camera: Camera;
     cameraDistance: number;
 
-    constructor (camera: Camera, scene: LevelScene) {
+    constructor (camera: Camera, game: Game) {
         // if (cannonBody === undefined) return;
-        this.scene = scene;
+        this.game = game;
         this.camera = camera;
         this.cameraDistance = 10;
         this.state = {
@@ -44,10 +46,10 @@ class FPSControls {
     }
 
     getPlayer() {
-        return this.scene.getActivePlayer();
+        return this.game.getLevel().getActivePlayer();
     }
     getBody() {
-        return this.scene.getActivePlayer().body;
+        return this.game.getLevel().getActivePlayer().body;
     }
 
     onMouseMove (event: MouseEvent) {
@@ -59,6 +61,14 @@ class FPSControls {
     onKeyDown (event: KeyboardEvent) {
         if (["w", "a", "s", "d", " "].includes(event.key)) {
             this.state.keysPressed.add(event.key);
+        }
+
+        // console.log(event);
+        if (event.code == "ArrowRight") {
+            this.game.setLevel(this.game.activeLevel+1);
+        }
+        if (event.code == "ArrowLeft") {
+            this.game.setLevel(this.game.activeLevel-1);
         }
     };
 
@@ -84,6 +94,7 @@ class FPSControls {
         // i know usually x is sideways but since y is up it is weird. so instead
         // if we make +/-x forward/backward, then +z is right and -z is left
         // and +/-y is up/down
+        const { canJump } = this.getPlayer().state;
         if (this.state.keysPressed.has("w")) {
             inputVelocity.x = this.state.velocityFactor * delta; // not sure why w is flipped
         }
@@ -97,22 +108,34 @@ class FPSControls {
         if (this.state.keysPressed.has("d")) {
             inputVelocity.z = this.state.velocityFactor * delta;
         }
-        if (this.state.keysPressed.has(" ") && this.getPlayer().state.canJump) {
+        if (this.state.keysPressed.has(" ") && canJump) {
             // jump and remove
             // apply impluse vertically
             this.getBody().velocity.y += this.getPlayer().state.jumpVelocity;
             this.getPlayer().state.canJump = false;
-            this.getPlayer().body.linearDamping = 0.2;
+            // this.getPlayer().body.linearDamping = 0.2;
         }
 
 
         // put camera behind the player
-        this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.15);
-        this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.15);
+        this.state.cameraAngle.x = this.getPlayer().state.cameraAngle.x;
+        this.state.cameraAngle.y = this.getPlayer().state.cameraAngle.y;
+        // this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.15);
+        // this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.15);
         // this.getPlayer().state.cameraAngle.x;
 
-        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
-        // this.camera.position.lerp(desiredPos, timeStamp <= 2000 ? 1 : 0.01);
+        // move closer if walls in the way
+        
+        const playerPos = this.getPlayer().position.clone().add(new Vector3(0, 0.5, 0));
+        const camPos = new Vector3();
+        this.camera.getWorldPosition(camPos)
+        const desiredPos = camPos.clone().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
+        const result = new CANNON.RaycastResult();
+        this.game.getLevel().world.raycastClosest(threeVectorToCannon(playerPos), threeVectorToCannon(desiredPos), { collisionFilterMask: COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS }, result);
+        const resDist = Math.abs(result.distance + 1) < EPS ? this.cameraDistance * 10 : result.distance;
+        const dist = Math.max(1, Math.min(resDist * 0.75, this.cameraDistance));
+        this.camera.position.setFromSphericalCoords(dist, this.state.cameraAngle.y, this.state.cameraAngle.x);
+
         // rotate body to look at camera
         this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
         const bodyPos = cannonVecToThree(this.getBody().position);
@@ -129,9 +152,23 @@ class FPSControls {
         inputVelocity.applyQuaternion(this.getPlayer().state.quat);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
 
+
+        // FORCES APPROACH
         // shift the position of the object by inputVelocity
         // this.getBody().applyForce(threeVectorToCannon(inputVelocity));
+        // if (this.getBody().force.length() > 70) {
+        //     this.getBody().force.normalize();
+        //     this.getBody().force.scale(70);
+        // }
+        // if (inputVelocity.length() < 0.025) {
+            // counter the net force walking
+            // const negForce = this.getBody().velocity.scale(-10);
+            // negForce.y = 0;
+            // this.getBody().applyForce(negForce);
+        // }
         // this.getBody().force.normalize().
+
+        // POSITION APPROACH
         this.getBody().position.x += inputVelocity.x;
         this.getBody().position.z += inputVelocity.z;
 

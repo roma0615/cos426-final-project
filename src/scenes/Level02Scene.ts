@@ -15,7 +15,7 @@ export enum COLLISION_GROUPS {
     // GROUP4 = 8
 }
 
-class Level01Scene extends BaseScene {
+class Level02Scene extends BaseScene {
 
     constructor(game: Game) {
         // Call parent BaseScene() constructor
@@ -31,21 +31,22 @@ class Level01Scene extends BaseScene {
 
         // --- LEVEL COMPONENTS --- //
         // const level = new Land(this, true);
-        const level = new LevelObject(this, 'level1', {
+        const level = new LevelObject(this, 'level2', {
             bodyType: CANNON.Body.STATIC,
             collisionGroup: COLLISION_GROUPS.SCENE,
             generateShapesOfChildren: true,
         });
 
 
-        // landing pad
+        // start pad
         const pad = new LevelObject(this, 'landing_pad', {
             collideCallback: (self, e) => {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
                 if (otherObj instanceof Player) {
                     // advance the level!
-                    // alert("YOU WIN");
-                    this.game.setLevel(2);
+                    console.log("Advancing level");
+                    alert("YOu win")
+                    // this.game.setLevel(3);
                 }
                 // otherBody.parent
                 // this.getActivePlayer().state.gravity = this.getActivePlayer().state.gravity.scale(-1);
@@ -54,7 +55,19 @@ class Level01Scene extends BaseScene {
         });
 
         // cube for pushing into place
-        const cube = new LevelObject(this, 'cube', {
+        const cube1 = new LevelObject(this, 'cube', {
+            mass: 1,
+            collideCallback: (self, e) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                // demo: invert gravity once u touch the red box
+                if (otherObj instanceof Player) {
+                    const p = otherObj as Player;
+                    p.setGravity(p.state.gravity.scale(-1));
+                }
+            },
+            offset: new Vector3(6, 0, -2),
+        });
+        const cube2 = new LevelObject(this, 'cube', {
             mass: 1,
             collideCallback: (self, e) => {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
@@ -67,9 +80,9 @@ class Level01Scene extends BaseScene {
             offset: new Vector3(6, 0, 2),
         });
 
-        this.add(level, cube, player1, player2, pad);
+        this.add(level, cube1, cube2, player1, player2, pad);
         // this.add(level, player1, player2);
     }
 }
 
-export default Level01Scene;
+export default Level02Scene;

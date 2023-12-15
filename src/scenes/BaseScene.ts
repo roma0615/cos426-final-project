@@ -7,6 +7,7 @@ import Player from '../objects/Player';
 import Land from '../objects/Land';
 import BasicLights from '../lights/BasicLights';
 import LevelObject from '../objects/LevelObject';
+import Game from '../Game';
 
 // Define an object type which describes each object in the update list
 type UpdateChild = {
@@ -23,12 +24,16 @@ export enum COLLISION_GROUPS {
 
 class BaseScene extends Scene {
     // Define the type of the state field
+    game: Game;
     state: {
         gui: dat.GUI;
         rotationSpeed: number;
         updateList: UpdateChild[];
         players: Player[];
         activePlayer: number;
+
+        p1OnPad: boolean;
+        p2OnPad: boolean;
     };
     materials: {
         ground: CANNON.Material;
@@ -39,15 +44,16 @@ class BaseScene extends Scene {
     world: CANNON.World;
     clock: Clock;
 
-    constructor() {
+    constructor(game: Game) {
         // Call parent Scene() constructor
         super();
+        this.game = game;
         this.clock = new Clock();
 
         // Init world
         this.timeStep = 1 / 60;
         this.world = new CANNON.World({
-            gravity: new CANNON.Vec3(0, -0.001, 0),  // sideways gravity for testing friction
+            frictionGravity: new CANNON.Vec3(0, -9.81, 0),  // since we use gravity manually
         });
         // setup materials
         this.materials = {
@@ -56,7 +62,6 @@ class BaseScene extends Scene {
         };
         this._initContactMaterials();
         
-
         // Init state
         this.state = {
             gui: new dat.GUI(), // Create GUI for scene
@@ -64,6 +69,8 @@ class BaseScene extends Scene {
             updateList: [],
             players: [],
             activePlayer: 0,
+            p1OnPad: false,
+            p2OnPad: false,
         };
 
         this.bodyToObj = new Map<CANNON.Body, any>();
@@ -89,9 +96,9 @@ class BaseScene extends Scene {
                 this.materials.ground,
                 this.materials.player,
                 {
-                    friction: 1,
+                    friction: 0.2,
                     restitution: 0.3,
-                    contactEquationStiffness: 1e8,
+                    contactEquationStiffness: 5e3, // softer
                     contactEquationRelaxation: 3,
                     frictionEquationStiffness: 1e8,
                 }

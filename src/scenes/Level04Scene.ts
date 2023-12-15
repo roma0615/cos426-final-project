@@ -15,7 +15,7 @@ export enum COLLISION_GROUPS {
     // GROUP4 = 8
 }
 
-class Level01Scene extends BaseScene {
+class Level04Scene extends BaseScene {
 
     constructor(game: Game) {
         // Call parent BaseScene() constructor
@@ -31,21 +31,21 @@ class Level01Scene extends BaseScene {
 
         // --- LEVEL COMPONENTS --- //
         // const level = new Land(this, true);
-        const level = new LevelObject(this, 'level1', {
+        const level = new LevelObject(this, 'level4', {
             bodyType: CANNON.Body.STATIC,
             collisionGroup: COLLISION_GROUPS.SCENE,
             generateShapesOfChildren: true,
         });
 
 
-        // landing pad
+        // start pad
         const pad = new LevelObject(this, 'landing_pad', {
             collideCallback: (self, e) => {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
                 if (otherObj instanceof Player) {
                     // advance the level!
-                    // alert("YOU WIN");
-                    this.game.setLevel(2);
+                    console.log("Advancing level");
+                    this.game.setLevel(1);
                 }
                 // otherBody.parent
                 // this.getActivePlayer().state.gravity = this.getActivePlayer().state.gravity.scale(-1);
@@ -64,7 +64,7 @@ class Level01Scene extends BaseScene {
                     p.setGravity(p.state.gravity.scale(-1));
                 }
             },
-            offset: new Vector3(6, 0, 2),
+            offset: new Vector3(6, 0, -2),
         });
 
         this.add(level, cube, player1, player2, pad);
@@ -72,4 +72,4 @@ class Level01Scene extends BaseScene {
     }
 }
 
-export default Level01Scene;
+export default Level04Scene;

@@ -16,6 +16,7 @@ interface Options {
     generateShapesOfChildren: boolean;
     mass: number;
     collideCallback: ((self: LevelObject, e: any) => void) | undefined;
+    collideEndCallback: ((self: LevelObject, e: any) => void) | undefined;
     updateCallback: ((timeStamp: number) => void) | undefined;
     show_wireframe: boolean;
 }
@@ -29,6 +30,7 @@ class LevelObject extends Group {
     mass: number;
     generateShapesOfChildren: boolean;
     collideCallback: ((self: LevelObject, e: any) => void) | undefined;
+    collideEndCallback: ((self: LevelObject, e: any) => void) | undefined;
     updateCallback: ((timeStamp: number) => void) | undefined;
 
     constructor(
@@ -45,13 +47,14 @@ class LevelObject extends Group {
         this.generateShapesOfChildren =
             options.generateShapesOfChildren || false;
         this.collideCallback = options.collideCallback;
+        this.collideEndCallback = options.collideEndCallback;
         this.updateCallback = options.updateCallback;
 
         // Init body
         this.body = new CANNON.Body({
             type: this.bodyType,
             mass: this.bodyType == CANNON.Body.STATIC ? 0 : this.mass,
-            linearDamping: 0.5,
+            // linearDamping: 0.9,
             material: parent.materials.ground,
             position: this.initialOffset as any,
             collisionFilterGroup:
@@ -75,20 +78,24 @@ class LevelObject extends Group {
                 ? gltf.scene.children
                 : [gltf.scene];
             objs.forEach((c) => {
+                if (c.name.endsWith("_X")) {
+                    console.log("not making shape for ", c);
+                    return; // don't add shapes for objects with _X
+                }
                 const result = threeToCannon(c);
                 const { shape, offset, quaternion } = result;
                 this.body.addShape(shape, offset, quaternion);
-                c.traverse((o) => {
+                c.traverse((o: any) => {
                     if (o.isMesh && o.material.name.endsWith("_T")) { // _T means set the material as transparent
-                        console.log(o.material);
                         o.material.transparent = true;
-                        o.material.opacity = 0.2;
+                        o.material.opacity = 0.05;
                     }
                 });
             });
         });
 
         this.body.addEventListener('collide', this.collideHandler.bind(this));
+        parent.world.addEventListener("endContact", this.collideEndHandler.bind(this));
 
         parent.addToUpdateList(this);
 
@@ -96,11 +103,26 @@ class LevelObject extends Group {
     }
 
     collideHandler(e: any) {
+        console.log("BEGIN", e);
         if (this.collideCallback) this.collideCallback(this, e);
+    }
+    collideEndHandler(e: any) {
+        const { bodyA, bodyB } = e;
+        if (bodyA.id != this.body.id && bodyB.id != this.body.id) return;
+        console.log("RELEVANT TO ME!")
+        console.log("ENDING", bodyA, bodyB);
+        console.log("My id", this.body.id);
+        console.log("Body IDs: ", bodyA.id, bodyB.id);
+        const event = {
+            body: bodyA.id == this.body.id ? bodyB : bodyA,
+            e
+        };
+        console.log("Sending event:", event);
+        if (this.collideEndCallback) this.collideEndCallback(this, event);
     }
 
     // given a contact event e, return the other body
-    static getOtherBody(self: LevelObject, e: any) {
+    static getOtherFromContact(self: LevelObject, e: any) {
         const otherBody =
             e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
         return otherBody;

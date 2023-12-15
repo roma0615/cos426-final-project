@@ -12,11 +12,14 @@ import FPSControls from './objects/FPSControls';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import Level01Scene from './scenes/Level01Scene';
+import Level02Scene from './scenes/Level02Scene';
+import Game from './Game';
 
 // Initialize core ThreeJS components
-const scene = new Level01Scene();
+
 const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true });
+const game = new Game();
 
 // Set up camera
 camera.position.set(-6, 3, 0);
@@ -40,13 +43,14 @@ canvas.addEventListener('click', async () => {
 // controls.minDistance = 4;
 // controls.maxDistance = 16;
 // controls.update();
-const controls = new FPSControls(camera, scene); // todo: update active player whenever we hit x
+const controls = new FPSControls(camera, game);
+// const controls = new PointerLockControls(camera, canvas);
 
 // Render loop
 const onAnimationFrameHandler = (timeStamp: number) => {
     controls.update(timeStamp);
-    renderer.render(scene, camera);
-    scene.update && scene.update(timeStamp);
+    renderer.render(game.getLevel(), camera);
+    game.getLevel().update && game.getLevel().update(timeStamp);
     window.requestAnimationFrame(onAnimationFrameHandler);
 };
 window.requestAnimationFrame(onAnimationFrameHandler);
