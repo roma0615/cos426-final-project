@@ -144,28 +144,55 @@ class FPSControls {
         // const dist = Math.max(1, Math.min(resDist * 0.75, this.cameraDistance));
         // this.camera.position.setFromSphericalCoords(dist, this.state.cameraAngle.y, this.state.cameraAngle.x);
 
+        // useful things
+        const normGrav = cannonVecToThree(this.getPlayer().state.gravity);
+        normGrav.normalize();
+        const localUp = threeVectorToCannon(normGrav).scale(-1);
+        const alignTop = new CANNON.Quaternion().setFromVectors(new CANNON.Vec3(0, 1, 0), localUp);
+
         // old way:
         this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
-
-        // rotate body to look at camera
-        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.state.cameraAngle.x + Math.PI / 2);
+        // 
 
         // point camera at player
         const bodyPos = cannonVecToThree(this.getBody().position);
         this.camera.position.add(bodyPos);
         this.camera.lookAt(bodyPos);
 
-        // Convert velocity to world coordinates based on direction of camera
+        // get direction the camera is pointing in world space
         const cameraWorldDir = new Vector3();
         this.camera.getWorldDirection(cameraWorldDir);
-        // subtract the upAxis direction projection and then normalize
-        const normGrav = cannonVecToThree(this.getPlayer().state.gravity);
-        normGrav.normalize();
+        // subtract the "up" direction (based on gravity of player) projection and then normalize
+        // normalized gravity
+        // movement correction subtracts out the movement in the direction of gravity (ie local up/down)
         const correction = cameraWorldDir.clone().projectOnVector(normGrav);
-        cameraWorldDir.sub(correction).normalize();
+        const cameraWorldDirCorrected = cameraWorldDir.clone();
+        cameraWorldDirCorrected.sub(correction).normalize();
+        // why doesn't work for sideways movement??
 
+        // TODO rotate player to look at camera and be oriented "upright" relative to its gravity
+        // this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.state.cameraAngle.x + Math.PI / 2);
+        const rotAroundGravAxis = new CANNON.Quaternion().setFromAxisAngle(
+            new CANNON.Vec3(0, 1, 0), // after applying alignTop, this is the up direction
+            this.state.cameraAngle.x + Math.PI / 2
+        );
+        this.getBody().quaternion.copy(alignTop.mult(rotAroundGravAxis));
+        // this.getBody().quaternion.copy(rotAroundGravAxis);
+        // const globalDown = new CANNON.Vec3(0, -1, 0);
+        // const angle = cannonVecToThree(globalDown).angleTo(normGrav);
+        // console.log("Gravity angle (deg)", angle / Math.PI * 180);
+        // // don't use corrected vector!
+        // const axis = cameraWorldDir.clone().applyQuaternion(new Quaternion().setFromAxisAngle(normGrav, -Math.PI / 2));
+        // const rot = new CANNON.Quaternion().setFromAxisAngle(threeVectorToCannon(axis), angle);
+        // this.getBody().quaternion.mult(rot);
+
+        // // remember: x is forward
+        // this.getBody().quaternion.copy(new CANNON.Quaternion().setFromVectors(new CANNON.Vec3(0, 1, 0), new CANNON.Vec3(1, 0, 0)));
+
+
+        // Goal: convert velocity to world coordinates based on direction of camera
         // player's state.quat stores rotation to look in the dir that the camera is looking
-        this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDir);
+        this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDirCorrected);
         inputVelocity.applyQuaternion(this.getPlayer().state.quat);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
 

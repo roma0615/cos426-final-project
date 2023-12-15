@@ -38,8 +38,9 @@ class Player extends Group {
     constructor(
         index: number,
         scene: BaseScene,
-        initialPos = new CANNON.Vec3(),
         clock: Clock,
+        initialPos = new CANNON.Vec3(),
+        gravity = new CANNON.Vec3(0, -9.82, 0),
         show_wireframe = true,
     ) {
         // Call parent Group() constructor
@@ -62,7 +63,7 @@ class Player extends Group {
             quat: new Quaternion(),
             walkSpeed: 0.1,
             jumpVelocity: 8.5,
-            gravity: new CANNON.Vec3(0, -9.82, 0),
+            gravity: gravity || new CANNON.Vec3(0, -9.82, 0),
             gravityClock: new Clock(),
         };
         this.state.gravityClock.start();

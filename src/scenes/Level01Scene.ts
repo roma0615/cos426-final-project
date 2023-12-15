@@ -5,7 +5,6 @@ import * as CANNON from 'cannon-es';
 import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
 import BaseScene from './BaseScene';
-import Land from '../objects/Land';
 import Game from '../Game';
 
 export enum COLLISION_GROUPS {
@@ -21,8 +20,8 @@ class Level01Scene extends BaseScene {
         // Call parent BaseScene() constructor
         super(game);
 
-        const player1 = new Player(0, this, new CANNON.Vec3(-7, 2, -2.5), this.clock);
-        const player2 = new Player(1, this, new CANNON.Vec3(-7, 2, 2.5), this.clock);
+        const player1 = new Player(0, this, this.clock, new CANNON.Vec3(-7, 2, -2.5));
+        const player2 = new Player(1, this, this.clock, new CANNON.Vec3(-7, 2, 2.5));
 
         // update state
         this.state.players.push(player1);

@@ -82,7 +82,6 @@ class LevelObject extends Group {
                 ? gltf.scene.children
                 : [gltf.scene];
             objs.forEach((c) => {
-                console.log("Creating shape for ", c);
                 if (c.name.endsWith("_X")) {
                     console.log("Not creating CANNON shape for", c);
                     return; // don't add shapes for objects with _X

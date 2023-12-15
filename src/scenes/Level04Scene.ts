@@ -21,8 +21,8 @@ class Level04Scene extends BaseScene {
         // Call parent BaseScene() constructor
         super(game);
 
-        const player1 = new Player(0, this, new CANNON.Vec3(-7, 1, -2.5), this.clock);
-        const player2 = new Player(1, this, new CANNON.Vec3(-7, 1, 2.5), this.clock);
+        const player1 = new Player(0, this, this.clock, new CANNON.Vec3(-7, 1, -2.5));
+        const player2 = new Player(1, this, this.clock, new CANNON.Vec3(-7, 1, 2.5));
 
         // update state
         this.state.players.push(player1);
@@ -52,7 +52,8 @@ class Level04Scene extends BaseScene {
                 }
             },
             offset: new Vector3(7, 0, 7),
-            quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(-1, 3, -1).normalize())
+            // quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(-1, 3, -1).normalize())
+            // quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(-1, -1, -1).normalize())
         });
 
         // landing pad

@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 
 import * as CANNON from 'cannon-es';
 
@@ -21,8 +21,11 @@ class Level00Scene extends BaseScene {
         // Call parent BaseScene() constructor
         super(game);
 
-        const player1 = new Player(0, this, new CANNON.Vec3(-7, 2, -5), this.clock);
-        const player2 = new Player(1, this, new CANNON.Vec3(-7, 2, 5), this.clock);
+        // const grav = new CANNON.Vec3(-6, -9.82, 0);
+        const grav = new CANNON.Vec3(-1, -1, 0);
+        grav.normalize();
+        const player1 = new Player(0, this, this.clock, new CANNON.Vec3(-7, 2, -5), grav.scale(9.82));
+        const player2 = new Player(1, this, this.clock, new CANNON.Vec3(-7, 2, 5));
 
         // update state
         this.state.players.push(player1);
@@ -35,6 +38,7 @@ class Level00Scene extends BaseScene {
             bodyType: CANNON.Body.STATIC,
             collisionGroup: COLLISION_GROUPS.SCENE,
             generateShapesOfChildren: true,
+            // quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0.2, 1, 0).normalize())
         });
 
 
