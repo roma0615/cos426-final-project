@@ -55,22 +55,23 @@ class Player extends Group {
             cameraAngle: {
                 // todo replace this with a quaternion so we don't get weird jumping
                 x: -Math.PI / 2,
-                y: Math.PI / 4,
+                y: Math.PI / 3,
             },
             contactNormal: new CANNON.Vec3(),
             canJump: false,
             quat: new Quaternion(),
             walkSpeed: 0.1,
-            jumpVelocity: 8,
+            jumpVelocity: 8.5,
             gravity: new CANNON.Vec3(0, -9.82, 0),
             gravityClock: new Clock(),
         };
+        this.state.gravityClock.start();
 
         // Init body
         this.body = new CANNON.Body({
             mass: 1,
-            // linearDamping: 0.75,
-            // angularDamping: 0.5,
+            linearDamping: 0.75,
+            angularDamping: 0.5,
             material: this.scene.materials.player,
             shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
             position: initialPos,
@@ -121,7 +122,15 @@ class Player extends Group {
 
     setGravity(newGrav: CANNON.Vec3) {
         // gravity set cooldown is 0.5 seconds
-        if (this.state.gravityClock.getDelta() > 0.5) this.state.gravity.copy(newGrav);
+        if (this.state.gravityClock.getDelta() > 0.5) {
+            // change quaternion to point in direction of newGrav
+            const quat = new CANNON.Quaternion().setFromVectors(this.state.gravity, newGrav);
+            this.body.quaternion = this.body.quaternion.mult(quat);
+            this.quaternion.copy(this.body.quaternion as any);
+            this.state.gravity.copy(newGrav);
+        } else {
+            console.log("TOO SOON!!! haha loser.")
+        }
     }
 
     collideHandler(e: any) {
@@ -143,7 +152,7 @@ class Player extends Group {
         if (this.state.contactNormal.dot(upAxis) > 0.5) {
             // Use a "good" threshold value between 0 and 1 here!
             this.state.canJump = true;
-            // this.body.linearDamping = 0.75;
+            this.body.linearDamping = 0.75;
         }
     }
 

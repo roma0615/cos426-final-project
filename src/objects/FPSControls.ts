@@ -35,7 +35,7 @@ class FPSControls {
             lastTimeStamp: 0,
             cameraAngle: {
                 x: -Math.PI / 2,
-                y: Math.PI / 4,
+                y: Math.PI / 3,
             }
         }
 
@@ -64,6 +64,12 @@ class FPSControls {
         }
 
         // console.log(event);
+        if (event.key == "r") { // restart level
+            this.game.restart();
+        }
+        if (event.key == "g") { // flip gravity
+            this.getPlayer().setGravity(this.getPlayer().state.gravity.scale(-1));
+        }
         if (event.code == "ArrowRight") {
             this.game.setLevel(this.game.activeLevel+1);
         }
@@ -113,31 +119,36 @@ class FPSControls {
             // apply impluse vertically
             this.getBody().velocity.y += this.getPlayer().state.jumpVelocity;
             this.getPlayer().state.canJump = false;
-            // this.getPlayer().body.linearDamping = 0.2;
+            this.getPlayer().body.linearDamping = 0.2;
         }
 
 
         // put camera behind the player
-        this.state.cameraAngle.x = this.getPlayer().state.cameraAngle.x;
-        this.state.cameraAngle.y = this.getPlayer().state.cameraAngle.y;
-        // this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.15);
-        // this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.15);
+        // this.state.cameraAngle.x = this.getPlayer().state.cameraAngle.x;
+        // this.state.cameraAngle.y = this.getPlayer().state.cameraAngle.y;
+        this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.25);
+        this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.25);
         // this.getPlayer().state.cameraAngle.x;
 
         // move closer if walls in the way
         
-        const playerPos = this.getPlayer().position.clone().add(new Vector3(0, 0.5, 0));
-        const camPos = new Vector3();
-        this.camera.getWorldPosition(camPos)
-        const desiredPos = camPos.clone().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
-        const result = new CANNON.RaycastResult();
-        this.game.getLevel().world.raycastClosest(threeVectorToCannon(playerPos), threeVectorToCannon(desiredPos), { collisionFilterMask: COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS }, result);
-        const resDist = Math.abs(result.distance + 1) < EPS ? this.cameraDistance * 10 : result.distance;
-        const dist = Math.max(1, Math.min(resDist * 0.75, this.cameraDistance));
-        this.camera.position.setFromSphericalCoords(dist, this.state.cameraAngle.y, this.state.cameraAngle.x);
+        // const playerPos = this.getPlayer().position.clone().add(new Vector3(0, 0.5, 0));
+        // const camPos = new Vector3();
+        // this.camera.getWorldPosition(camPos)
+        // const desiredPos = camPos.clone().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
+        // const result = new CANNON.RaycastResult();
+        // this.game.getLevel().world.raycastClosest(threeVectorToCannon(playerPos), threeVectorToCannon(desiredPos), { collisionFilterMask: COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS }, result);
+        // const resDist = Math.abs(result.distance + 1) < EPS ? this.cameraDistance * 10 : result.distance;
+        // const dist = Math.max(1, Math.min(resDist * 0.75, this.cameraDistance));
+        // this.camera.position.setFromSphericalCoords(dist, this.state.cameraAngle.y, this.state.cameraAngle.x);
+
+        // old way:
+        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
 
         // rotate body to look at camera
-        this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
+        // this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.getPlayer().state.cameraAngle.x + Math.PI / 2);
+
+        // point camera at player
         const bodyPos = cannonVecToThree(this.getBody().position);
         this.camera.position.add(bodyPos);
         this.camera.lookAt(bodyPos);

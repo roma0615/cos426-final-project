@@ -48,7 +48,6 @@ class Level00Scene extends BaseScene {
                 }
             },
             collideEndCallback: (self, e) => {
-                console.log("END CALLBACK RECEIVED", e);
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -66,7 +65,6 @@ class Level00Scene extends BaseScene {
                 }
             },
             collideEndCallback: (self, e) => {
-                console.log("END CALLBACK RECEIVED", e);
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player2.name) {
                     this.state.p2OnPad = false;
@@ -81,11 +79,6 @@ class Level00Scene extends BaseScene {
 
     update(timeStamp: number): void {
         super.update(timeStamp);
-        console.log("Players on pad", (this.state.p1OnPad ? 1 : 0) + (this.state.p2OnPad ? 1 : 0));
-
-        if (this.state.p1OnPad && this.state.p2OnPad) {
-            this.game.setLevel(1);
-        }
 
     }
 }

@@ -116,6 +116,18 @@ class BaseScene extends Scene {
                 }
             )
         );
+        this.world.addContactMaterial(
+            new CANNON.ContactMaterial(
+                this.materials.ground,
+                this.materials.ground,
+                {
+                    friction: 0.1,
+                    restitution: 0.3,
+                    contactEquationStiffness: 1e8,
+                    contactEquationRelaxation: 3,
+                }
+            )
+        );
     }
 
     addToUpdateList(object: UpdateChild): void {
@@ -145,6 +157,15 @@ class BaseScene extends Scene {
                 obj.update(timeStamp);
             }
         }
+
+        // check if both players are on pads
+        if (this.state.p1OnPad && this.state.p2OnPad) {
+            this.winAction()
+        }
+    }
+
+    winAction() {
+        this.game.setLevel(this.game.activeLevel + 1);
     }
     
     keydownHandler (event: any) {

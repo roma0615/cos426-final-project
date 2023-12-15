@@ -21,8 +21,8 @@ class Level04Scene extends BaseScene {
         // Call parent BaseScene() constructor
         super(game);
 
-        const player1 = new Player(0, this, new CANNON.Vec3(-7, 2, -2.5), this.clock);
-        const player2 = new Player(1, this, new CANNON.Vec3(-7, 2, 2.5), this.clock);
+        const player1 = new Player(0, this, new CANNON.Vec3(-7, 1, -2.5), this.clock);
+        const player2 = new Player(1, this, new CANNON.Vec3(-7, 1, 2.5), this.clock);
 
         // update state
         this.state.players.push(player1);
@@ -38,19 +38,54 @@ class Level04Scene extends BaseScene {
         });
 
 
-        // start pad
-        const pad = new LevelObject(this, 'landing_pad', {
+        // gravity pad!!! omg
+        const gravityPad = new LevelObject(this, 'gravity_pad', {
+            bodyType: CANNON.Body.STATIC,
+            generateShapesOfChildren: true,
             collideCallback: (self, e) => {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
                 if (otherObj instanceof Player) {
-                    // advance the level!
-                    console.log("Advancing level");
-                    this.game.setLevel(1);
+                    const p = otherObj as Player;
+                    p.setGravity(p.state.gravity.scale(-1));
+                    // this.state.p1OnPad = true;
                 }
-                // otherBody.parent
-                // this.getActivePlayer().state.gravity = this.getActivePlayer().state.gravity.scale(-1);
             },
-            offset: new Vector3(10, 0, 0),
+            offset: new Vector3(7, 0, 7)
+        });
+
+        // landing pad
+        const pad1 = new LevelObject(this, 'landing_pad1', {
+            bodyType: CANNON.Body.STATIC,
+            collideCallback: (self, e) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj.name == player1.name) {
+                    this.state.p1OnPad = true;
+                }
+            },
+            collideEndCallback: (self, e) => {
+                const otherObj = this.getObjByBody(e.body);
+                if (otherObj.name == player1.name) {
+                    this.state.p1OnPad = false;
+                }
+            },
+            offset: new Vector3(10, 0, -5),
+        });
+        // landing pad
+        const pad2 = new LevelObject(this, 'landing_pad2', {
+            bodyType: CANNON.Body.STATIC,
+            collideCallback: (self, e) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj.name == player2.name) {
+                    this.state.p2OnPad = true;
+                }
+            },
+            collideEndCallback: (self, e) => {
+                const otherObj = this.getObjByBody(e.body);
+                if (otherObj.name == player2.name) {
+                    this.state.p2OnPad = false;
+                }
+            },
+            offset: new Vector3(10, 0, 5),
         });
 
         // cube for pushing into place
@@ -67,8 +102,12 @@ class Level04Scene extends BaseScene {
             offset: new Vector3(6, 0, -2),
         });
 
-        this.add(level, cube, player1, player2, pad);
+        this.add(level, cube, player1, player2, pad1, pad2, gravityPad);
         // this.add(level, player1, player2);
+    }
+
+    winAction() {
+        alert("YOU WIN!")
     }
 }
 

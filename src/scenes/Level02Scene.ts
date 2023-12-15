@@ -38,20 +38,38 @@ class Level02Scene extends BaseScene {
         });
 
 
-        // start pad
-        const pad = new LevelObject(this, 'landing_pad', {
+        // landing pad
+        const pad1 = new LevelObject(this, 'landing_pad1', {
+            bodyType: CANNON.Body.STATIC,
             collideCallback: (self, e) => {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
-                if (otherObj instanceof Player) {
-                    // advance the level!
-                    console.log("Advancing level");
-                    alert("YOu win")
-                    // this.game.setLevel(3);
+                if (otherObj.name == player1.name) {
+                    this.state.p1OnPad = true;
                 }
-                // otherBody.parent
-                // this.getActivePlayer().state.gravity = this.getActivePlayer().state.gravity.scale(-1);
             },
-            offset: new Vector3(10, 0, 0),
+            collideEndCallback: (self, e) => {
+                const otherObj = this.getObjByBody(e.body);
+                if (otherObj.name == player1.name) {
+                    this.state.p1OnPad = false;
+                }
+            },
+            offset: new Vector3(14.5, 4.16, 6),
+        });
+        const pad2 = new LevelObject(this, 'landing_pad2', {
+            bodyType: CANNON.Body.STATIC,
+            collideCallback: (self, e) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj.name == player2.name) {
+                    this.state.p2OnPad = true;
+                }
+            },
+            collideEndCallback: (self, e) => {
+                const otherObj = this.getObjByBody(e.body);
+                if (otherObj.name == player1.name) {
+                    this.state.p1OnPad = false;
+                }
+            },
+            offset: new Vector3(10.5, 4.16, 6),
         });
 
         // cube for pushing into place
@@ -62,10 +80,10 @@ class Level02Scene extends BaseScene {
                 // demo: invert gravity once u touch the red box
                 if (otherObj instanceof Player) {
                     const p = otherObj as Player;
-                    p.setGravity(p.state.gravity.scale(-1));
+                    // p.setGravity(p.state.gravity.scale(-1));
                 }
             },
-            offset: new Vector3(6, 0, -2),
+            offset: new Vector3(13, 6, 4),
         });
         const cube2 = new LevelObject(this, 'cube', {
             mass: 1,
@@ -74,13 +92,13 @@ class Level02Scene extends BaseScene {
                 // demo: invert gravity once u touch the red box
                 if (otherObj instanceof Player) {
                     const p = otherObj as Player;
-                    p.setGravity(p.state.gravity.scale(-1));
+                    // p.setGravity(p.state.gravity.scale(-1));
                 }
             },
-            offset: new Vector3(6, 0, 2),
+            offset: new Vector3(12.5, 1, -4),
         });
 
-        this.add(level, cube1, cube2, player1, player2, pad);
+        this.add(level, cube1, cube2, player1, player2, pad1, pad2);
         // this.add(level, player1, player2);
     }
 }
