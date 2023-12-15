@@ -4,15 +4,8 @@ import * as CANNON from 'cannon-es';
 
 import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
-import BaseScene from './BaseScene';
+import BaseScene, { COLLISION_GROUPS } from './BaseScene';
 import Game from '../Game';
-
-export enum COLLISION_GROUPS {
-    PLAYER = 1,
-    SCENE = 2,
-    OBJECTS = 4,
-    // GROUP4 = 8
-}
 
 class Level01Scene extends BaseScene {
 

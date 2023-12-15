@@ -61,7 +61,7 @@ class Player extends Group {
             contactNormal: new CANNON.Vec3(),
             canJump: false,
             quat: new Quaternion(),
-            walkSpeed: 0.1,
+            walkSpeed: 0.125,
             jumpVelocity: 8.5,
             gravity: gravity || new CANNON.Vec3(0, -9.82, 0),
             gravityClock: new Clock(),
@@ -129,8 +129,6 @@ class Player extends Group {
             this.body.quaternion = this.body.quaternion.mult(quat);
             this.quaternion.copy(this.body.quaternion as any);
             this.state.gravity.copy(newGrav);
-        } else {
-            console.log("TOO SOON!!! haha loser.")
         }
     }
 

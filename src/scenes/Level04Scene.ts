@@ -4,16 +4,9 @@ import * as CANNON from 'cannon-es';
 
 import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
-import BaseScene from './BaseScene';
-import Land from '../objects/Land';
+import BaseScene, { COLLISION_GROUPS } from './BaseScene';
+import Land from '../objects/Platform';
 import Game from '../Game';
-
-export enum COLLISION_GROUPS {
-    PLAYER = 1,
-    SCENE = 2,
-    OBJECTS = 4,
-    // GROUP4 = 8
-}
 
 class Level04Scene extends BaseScene {
 
@@ -66,10 +59,11 @@ class Level04Scene extends BaseScene {
             offset: new Vector3(7, 7, 5.5),
             // quaternion: upsideDown,
         });
-        const gravityPad3 = new LevelObject(this, 'gravity_pad', {
-            ...gravityPadConfig(),
-            offset: new Vector3(-7, 20.9, 7),
-            quaternion: upsideDown,
+
+        // cube on the ceiling?
+        const cube = new LevelObject(this, 'cube', {
+            offset: new Vector3(0, 15, -10),
+            gravity: new CANNON.Vec3(0, 9.82, 0), // flipped gravity
         });
 
         // landing pad on the ceiling.
@@ -87,10 +81,10 @@ class Level04Scene extends BaseScene {
                     this.state.p1OnPad = false;
                 }
             },
-            offset: new Vector3(-7, 19, 0),
+            offset: new Vector3(7, 18, -11),
             quaternion: upsideDown,
         });
-        // landing pad
+        // landing pad also on the ceiling
         const pad2 = new LevelObject(this, 'landing_pad2', {
             bodyType: CANNON.Body.STATIC,
             collideCallback: (self, e) => {
@@ -105,15 +99,12 @@ class Level04Scene extends BaseScene {
                     this.state.p2OnPad = false;
                 }
             },
-            offset: new Vector3(7, 0, 0),
+            offset: new Vector3(-7, 18, -11),
+            quaternion: upsideDown,
         });
 
-        this.add(level, player1, player2, pad1, pad2, gravityPad, gravityPad2);
+        this.add(level, player1, player2, pad1, pad2, gravityPad, gravityPad2, cube);
         // this.add(level, player1, player2);
-    }
-
-    winAction() {
-        alert("YOU WIN!")
     }
 }
 

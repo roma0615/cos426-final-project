@@ -4,7 +4,7 @@ import { Scene, Color, Sphere, Vector3, SphereGeometry, Mesh, Clock } from 'thre
 import * as CANNON from 'cannon-es';
 
 import Player from '../objects/Player';
-import Land from '../objects/Land';
+import Land from '../objects/Platform';
 import BasicLights from '../lights/BasicLights';
 import LevelObject from '../objects/LevelObject';
 import Game from '../Game';
@@ -19,7 +19,6 @@ export enum COLLISION_GROUPS {
     PLAYER = 1,
     SCENE = 2,
     OBJECTS = 4,
-    // GROUP4 = 8
 }
 
 class BaseScene extends Scene {
@@ -51,7 +50,7 @@ class BaseScene extends Scene {
         this.clock = new Clock();
 
         // Init world
-        this.timeStep = 1 / 60;
+        this.timeStep = 1 / 45;
         this.world = new CANNON.World({
             frictionGravity: new CANNON.Vec3(0, -9.81, 0),  // since we use gravity manually
         });
@@ -109,7 +108,7 @@ class BaseScene extends Scene {
                 this.materials.player,
                 this.materials.player,
                 {
-                    friction: 0,
+                    friction: 10,
                     restitution: 0.3,
                     contactEquationStiffness: 1e8,
                     contactEquationRelaxation: 3,

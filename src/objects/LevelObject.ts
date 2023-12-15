@@ -13,6 +13,7 @@ interface Options {
     offset: Vector3;
     quaternion: Quaternion;
     bodyType: CANNON.BodyType;
+    gravity: CANNON.Vec3;
     isTrigger: boolean;
     collisionGroup: COLLISION_GROUPS;
     generateShapesOfChildren: boolean;
@@ -26,6 +27,7 @@ interface Options {
 // base class for object
 class LevelObject extends Group {
     body: CANNON.Body;
+    gravity: CANNON.Vec3;
     modelName: string;
     bodyType: CANNON.BodyType | undefined;
     isTrigger: boolean;
@@ -50,6 +52,7 @@ class LevelObject extends Group {
         this.bodyType = options.bodyType || CANNON.Body.DYNAMIC;
         this.isTrigger = options.isTrigger || false;
         this.mass = options.mass || 1;
+        this.gravity = options.gravity || new CANNON.Vec3(0, -9.82, 0);
         this.generateShapesOfChildren =
             options.generateShapesOfChildren || false;
         this.collideCallback = options.collideCallback;
@@ -137,7 +140,7 @@ class LevelObject extends Group {
         if (this.bodyType == CANNON.Body.DYNAMIC) {
             // copy cannon physics to group mesh
             // custom gravity
-            this.body.applyForce(new CANNON.Vec3(0, -9.82, 0));
+            this.body.applyForce(this.gravity);
 
             this.position.copy(this.body.position as any);
             this.quaternion.copy(this.body.quaternion as any);

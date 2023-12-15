@@ -4,7 +4,7 @@ import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
-import { EPS, cannonQuatToThree, cannonVecToThree, threeVectorToCannon } from '../utils';
+import { EPS, cannonQuatToThree, cannonVecToThree, threeQuatToCannon, threeVectorToCannon } from '../utils';
 import BaseScene from '../scenes/BaseScene';
 import Game from '../Game';
 
@@ -92,7 +92,6 @@ class FPSControls {
     update(timeStamp: number) {
         const inputVelocity = new Vector3();
         const delta = timeStamp - this.state.lastTimeStamp;
-        // delta *= 0.1;
 
         // inputVelocity is local space right now
         inputVelocity.set(0, 0, 0);
@@ -128,16 +127,18 @@ class FPSControls {
             this.getPlayer().body.linearDamping = 0.2;
         }
 
+        // inputVelocity is in local space
+
+        // use setFromSpherical
+        // rotate around axis
 
         // put camera behind the player
         // this.state.cameraAngle.x = this.getPlayer().state.cameraAngle.x;
         // this.state.cameraAngle.y = this.getPlayer().state.cameraAngle.y;
-        this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.25);
-        this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.25);
-        // this.getPlayer().state.cameraAngle.x;
+        this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.15);
+        this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.15);
 
         // move closer if walls in the way
-        
         // const playerPos = this.getPlayer().position.clone().add(new Vector3(0, 0.5, 0));
         // const camPos = new Vector3();
         // this.camera.getWorldPosition(camPos)
@@ -148,26 +149,41 @@ class FPSControls {
         // const dist = Math.max(1, Math.min(resDist * 0.75, this.cameraDistance));
         // this.camera.position.setFromSphericalCoords(dist, this.state.cameraAngle.y, this.state.cameraAngle.x);
 
-        // useful things
-        const normGrav = cannonVecToThree(this.getPlayer().state.gravity);
+        // next goal:  orient the player to appear the "right way up" according to its local gravity vector
+        // useful variables
+        const normGrav = cannonVecToThree(this.getPlayer().state.gravity);           // normalized gravity
         normGrav.normalize();
-        const localUp = new CANNON.Vec3(0, 1, 0);
-        const globalUp = threeVectorToCannon(normGrav).scale(-1); // up in WORLD SPACE
-        const alignTop = new CANNON.Quaternion().setFromVectors(localUp, globalUp);
+        const localUp = new CANNON.Vec3(0, 1, 0);                                    // up direction in local space
+        const globalUp = threeVectorToCannon(normGrav).scale(-1);                    // up direction in WORLD SPACE
+        const alignTop = new CANNON.Quaternion().setFromVectors(localUp, globalUp);  // rotation to convert from local to global
         // const gravAngle = 
 
-        // old way:
-        this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
-        // point camera at player
-        const bodyPos = cannonVecToThree(this.getBody().position);
-        this.camera.position.add(bodyPos);
-        this.camera.lookAt(bodyPos);
+        // 1) inital setting of quaternion to match gravity
+        const alignTopCamera = cannonQuatToThree(alignTop.mult(new CANNON.Quaternion().setFromAxisAngle(localUp, -Math.PI / 2)));
+        this.camera.quaternion.copy(new Quaternion());
+        this.camera.applyQuaternion(alignTopCamera); // GOOD, KEEP THIS
 
+        const spherePos = new Vector3().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x).applyQuaternion(cannonQuatToThree(alignTop));
+        const bodyPos = this.getBody().position;
+        this.camera.position.copy(cannonVecToThree(bodyPos).add(spherePos));
+
+        // have to reimplement lookAt with quaternions
+        const camToBody = cannonVecToThree(bodyPos).sub(this.camera.position);
+        // const lookAtBody = new Quaternion().setFromUnitVectors(new Vector3(1, 0, 0), camToBody).slerp(new Quaternion(), 0.5); // kinda works, rotates weird
+        const angle = new Vector3(1, 0, 0).angleTo(camToBody); // signed angle?
+        const axis = new Vector3(1, 0, 0).cross(camToBody).projectOnVector(cannonVecToThree(globalUp)).normalize();
+        const lookAtBody = new Quaternion().setFromAxisAngle(axis, angle);
+        this.camera.applyQuaternion(lookAtBody);
+
+
+
+        // STILL HAVE TO FIX THIS
+
+        // get direction of camera, since that impacts what "forward" means
         // get direction the camera is pointing in world space
         const cameraWorldDir = new Vector3();
         this.camera.getWorldDirection(cameraWorldDir);
         // subtract the "up" direction (based on gravity of player) projection and then normalize
-        // normalized gravity
         // movement correction subtracts out the movement in the direction of gravity (ie local up/down)
         const correction = cameraWorldDir.clone().projectOnVector(normGrav);
         const cameraWorldDirCorrected = cameraWorldDir.clone();
@@ -185,34 +201,13 @@ class FPSControls {
         // const globalDown = new CANNON.Vec3(0, -1, 0);
         // const angle = cannonVecToThree(globalDown).angleTo(normGrav);
         // console.log("Gravity angle (deg)", angle / Math.PI * 180);
-        // // don't use corrected vector!
-        // const axis = cameraWorldDir.clone().applyQuaternion(new Quaternion().setFromAxisAngle(normGrav, -Math.PI / 2));
-        // const rot = new CANNON.Quaternion().setFromAxisAngle(threeVectorToCannon(axis), angle);
-        // this.getBody().quaternion.mult(rot);
-
-        // // remember: x is forward
-        // this.getBody().quaternion.copy(new CANNON.Quaternion().setFromVectors(new CANNON.Vec3(0, 1, 0), new CANNON.Vec3(1, 0, 0)));
-
+        
 
         // Goal: convert velocity to world coordinates based on direction of camera
         // player's state.quat stores rotation of plane to WALK IN (canceling out movement in gravity direction)
-        this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDirCorrected);
+        // this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDirCorrected); // might be better when cameera position is fixed?
         inputVelocity.applyQuaternion(this.getPlayer().state.quat);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
-
-
-        // apply alignTop to the camera?
-        // goal: create a vector that points from player to where camera would be (using spherical corods)
-        // const camPosWithRot = new Vector3().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, -Math.PI / 2);
-        // camPosWithRot.applyQuaternion(cannonQuatToThree(this.getBody().quaternion));
-        // // then rotate that vector according to something ? body.state.quat?
-        // // whatever rotation is on the player
-        // // point camera at player again with this new thing
-        // this.camera.position.copy(camPosWithRot);
-        // this.camera.position.add(bodyPos); // add to body 
-        // this.camera.lookAt(bodyPos); // look at it
-
-        // this.camera.quaternion.multiply(cannonQuatToThree(rotAroundGravAxis));
 
         // POSITION APPROACH
         this.getBody().position.x += inputVelocity.x;
