@@ -160,6 +160,7 @@ class FPSControls {
 
         // 1) inital setting of quaternion to match gravity
         const alignTopCamera = cannonQuatToThree(alignTop.mult(new CANNON.Quaternion().setFromAxisAngle(localUp, -Math.PI / 2)));
+        // const alignTopCamera = cannonQuatToThree(alignTop.mult(new CANNON.Quaternion().setFromAxisAngle(localUp, 0))); // 0 if we apply after lookAt
         this.camera.quaternion.copy(new Quaternion());
         this.camera.applyQuaternion(alignTopCamera); // GOOD, KEEP THIS
 
@@ -168,20 +169,43 @@ class FPSControls {
         this.camera.position.copy(cannonVecToThree(bodyPos).add(spherePos));
 
         // have to reimplement lookAt with quaternions
+        // PART 1: around globalUp axis (moving mouse left/right)
         const camToBody = cannonVecToThree(bodyPos).sub(this.camera.position);
         // const lookAtBody = new Quaternion().setFromUnitVectors(new Vector3(1, 0, 0), camToBody).slerp(new Quaternion(), 0.5); // kinda works, rotates weird
-        const angle = new Vector3(1, 0, 0).angleTo(camToBody); // signed angle?
-        const axis = new Vector3(1, 0, 0).cross(camToBody).projectOnVector(cannonVecToThree(globalUp)).normalize();
-        const lookAtBody = new Quaternion().setFromAxisAngle(axis, angle);
-        this.camera.applyQuaternion(lookAtBody);
 
+        // camBody: need to remove the part that's in line with the axis
+        // const camToBodyNoY = camToBody.clone().setY(0).normalize();
+        const axis = cannonVecToThree(globalUp);
+        const camToBodyOrth = camToBody.clone().sub(camToBody.projectOnVector(axis));
+        const angle = new Vector3(1, 0, 0).angleTo(camToBodyOrth); // how to get signed angle?
+        const cross = new Vector3(1, 0, 0).cross(camToBodyOrth); // how to get signed angle?
+        const flip = axis.dot(cross) >= -EPS ? 1 : -1;
+        const signedAngle = flip * angle; // should be between [0, 2pi] now
+        const lookAtBody = new Quaternion().setFromAxisAngle(axis, signedAngle);
+        this.camera.applyQuaternion(lookAtBody);
+        console.log(angle);
+
+        // part 2: around camera's local . direction camera is looking, and globalUp
+        const cameraWorldDir = new Vector3();
+        // this.camera.getWorldDirection(cameraWorldDir);
+        // const pitchAxis = cameraWorldDir.cross(axis);
+
+        // const angle2 = cameraWorldDir.clone().angleTo(camToBody);
+        // const lookAtBody2 = new Quaternion().setFromAxisAngle(pitchAxis, -angle2);
+        // this.camera.applyQuaternion(lookAtBody2);
+
+
+        // this.camera.applyQuaternion(new Quaternion().setFromAxisAngle(axis, Math.PI));
+
+        // this.camera.lookAt(cannonVecToThree(bodyPos)); // undoes everything
+        // this.camera.applyQuaternion(alignTopCamera); // GOOD, KEEP THIS
 
 
         // STILL HAVE TO FIX THIS
 
         // get direction of camera, since that impacts what "forward" means
         // get direction the camera is pointing in world space
-        const cameraWorldDir = new Vector3();
+        // const cameraWorldDir = new Vector3();
         this.camera.getWorldDirection(cameraWorldDir);
         // subtract the "up" direction (based on gravity of player) projection and then normalize
         // movement correction subtracts out the movement in the direction of gravity (ie local up/down)
