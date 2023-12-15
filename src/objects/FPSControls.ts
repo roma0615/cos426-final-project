@@ -67,7 +67,7 @@ class FPSControls {
         if (event.key == "r") { // restart level
             this.game.restart();
         }
-        if (event.key == "g") { // flip gravity
+        if (event.key == "g") { // flip gravity // todo remove this
             // this.getPlayer().setGravity(this.getPlayer().state.gravity.scale(-1));
             this.getPlayer().setGravity(new CANNON.Vec3(-2, -8, 0));
         }
