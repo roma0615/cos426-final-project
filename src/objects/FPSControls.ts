@@ -59,15 +59,16 @@ class FPSControls {
     }
 
     onKeyDown (event: KeyboardEvent) {
-        if (["w", "a", "s", "d", " "].includes(event.key)) {
-            this.state.keysPressed.add(event.key);
+        const key = event.key.toLowerCase();
+        if (["w", "a", "s", "d", " "].includes(key)) {
+            this.state.keysPressed.add(key);
         }
 
         // console.log(event);
-        if (event.key == "r") { // restart level
+        if (key == "r") { // restart level
             this.game.restart();
         }
-        if (event.key == "g") { // flip gravity // todo remove this
+        if (key == "g") { // flip gravity // todo remove this
             // this.getPlayer().setGravity(this.getPlayer().state.gravity.scale(-1));
             this.getPlayer().setGravity(new CANNON.Vec3(-2, -8, 0));
         }
