@@ -15,17 +15,14 @@ export enum COLLISION_GROUPS {
     // GROUP4 = 8
 }
 
-class Level00Scene extends BaseScene {
+class Level03Scene extends BaseScene {
 
     constructor(game: Game) {
         // Call parent BaseScene() constructor
         super(game);
 
-        // const grav = new CANNON.Vec3(-6, -9.82, 0);
-        // const grav = new CANNON.Vec3(-1, -1, 0);
-        // grav.normalize();
-        const player1 = new Player(0, this, this.clock, new CANNON.Vec3(-7, 2, -5));
-        const player2 = new Player(1, this, this.clock, new CANNON.Vec3(-7, 2, 5));
+        const player1 = new Player(0, this, this.clock, new CANNON.Vec3(-7, 1, -2.5));
+        const player2 = new Player(1, this, this.clock, new CANNON.Vec3(-7, 1, 2.5));
 
         // update state
         this.state.players.push(player1);
@@ -33,16 +30,41 @@ class Level00Scene extends BaseScene {
         this.state.activePlayer = 0;
 
         // --- LEVEL COMPONENTS --- //
+        const upsideDown = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, -1, 0));
+
         // const level = new Land(this, true);
-        const level = new LevelObject(this, 'level0', {
+        const level = new LevelObject(this, 'level3', {
             bodyType: CANNON.Body.STATIC,
             collisionGroup: COLLISION_GROUPS.SCENE,
             generateShapesOfChildren: true,
-            // quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0.2, 1, 0).normalize())
         });
 
+        const gravityPadConfig = () => ({
+            bodyType: CANNON.Body.STATIC,
+            generateShapesOfChildren: true,
+            collideCallback: (self: LevelObject, e: any) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj instanceof Player) {
+                    const p = otherObj as Player;
+                    // set gravity in the orientation of the pad
+                    p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
+                    // this.state.p1OnPad = true;
+                }
+            },
+        });
 
-        // landing pad
+        // gravity pad!!! omg
+        const gravityPad = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(0, 0, 0),
+        });
+        const gravityPad2 = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(-7, 19, 7),
+            quaternion: upsideDown,
+        });
+
+        // landing pad on the ceiling.
         const pad1 = new LevelObject(this, 'landing_pad1', {
             bodyType: CANNON.Body.STATIC,
             collideCallback: (self, e) => {
@@ -57,7 +79,8 @@ class Level00Scene extends BaseScene {
                     this.state.p1OnPad = false;
                 }
             },
-            offset: new Vector3(10, 0, -5),
+            offset: new Vector3(-7, 19, 0),
+            quaternion: upsideDown,
         });
         // landing pad
         const pad2 = new LevelObject(this, 'landing_pad2', {
@@ -74,17 +97,12 @@ class Level00Scene extends BaseScene {
                     this.state.p2OnPad = false;
                 }
             },
-            offset: new Vector3(10, 0, 5),
+            offset: new Vector3(7, 0, 0),
         });
 
-        this.add(level, player1, player2, pad1, pad2);
+        this.add(level, player1, player2, pad1, pad2, gravityPad, gravityPad2);
         // this.add(level, player1, player2);
-    }
-
-    update(timeStamp: number): void {
-        super.update(timeStamp);
-
     }
 }
 
-export default Level00Scene;
+export default Level03Scene;

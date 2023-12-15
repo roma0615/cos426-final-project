@@ -2,6 +2,7 @@ import BaseScene from "./scenes/BaseScene";
 import Level00Scene from "./scenes/Level00Scene";
 import Level01Scene from "./scenes/Level01Scene";
 import Level02Scene from "./scenes/Level02Scene";
+import Level03Scene from "./scenes/Level03Scene";
 import Level04Scene from "./scenes/Level04Scene";
 
 class Game {
@@ -10,7 +11,7 @@ class Game {
   activeLevel: number;
 
   constructor() {
-    this.levelClasses = [Level00Scene, Level01Scene, Level02Scene, Level04Scene];
+    this.levelClasses = [Level00Scene, Level01Scene, Level02Scene, Level03Scene, Level04Scene];
     this.levels = this.levelClasses.map((L) => new L(this));
     this.activeLevel = 0;
   }
