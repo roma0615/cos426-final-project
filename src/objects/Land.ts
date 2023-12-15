@@ -8,6 +8,7 @@ import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 // Import land model as a URL using Vite's syntax
 import MODEL from './level1.glb?url';
 
+// NO LONGER USING THIS FILE
 class Land extends Group {
     parent: LevelScene;
     body: CANNON.Body;

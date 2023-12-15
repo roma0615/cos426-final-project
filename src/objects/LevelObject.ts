@@ -78,11 +78,14 @@ class LevelObject extends Group {
                 const result = threeToCannon(c);
                 const { shape, offset, quaternion } = result;
                 this.body.addShape(shape, offset, quaternion);
+                c.traverse((o) => {
+                    if (o.isMesh && o.material.name.endsWith("_T")) { // _T means set the material as transparent
+                        console.log(o.material);
+                        o.material.transparent = true;
+                        o.material.opacity = 0.2;
+                    }
+                });
             });
-            // var model = gltf.scene;
-            // model.traverse((o) => {
-            //     if (o.isMesh) o.material.wireframe = true;
-            // });
         });
 
         this.body.addEventListener('collide', this.collideHandler.bind(this));

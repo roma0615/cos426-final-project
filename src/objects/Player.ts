@@ -12,6 +12,7 @@ import MODEL2 from './player2.glb?url';
 
 class Player extends Group {
     // Define the type of the state field
+    scene: BaseScene;
     anim: {
         mixer: AnimationMixer | undefined;
         clips: AnimationClip[];
@@ -36,13 +37,14 @@ class Player extends Group {
 
     constructor(
         index: number,
-        parent: BaseScene,
+        scene: BaseScene,
         initialPos = new CANNON.Vec3(),
         clock: Clock,
         show_wireframe = true,
     ) {
         // Call parent Group() constructor
         super();
+        this.scene = scene
         this.clock = clock;
 
         // Init state
@@ -64,16 +66,16 @@ class Player extends Group {
         // Init body
         this.body = new CANNON.Body({
             mass: 1,
-            linearDamping: 0.5,
+            linearDamping: 0.75,
             angularDamping: 0.5,
-            material: parent.materials.player,
+            material: this.scene.materials.player,
             shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
             position: initialPos,
             collisionFilterGroup: COLLISION_GROUPS.PLAYER,
             collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS
         });
-        parent.world.addBody(this.body);
-        parent.registerBody(this.body, this);
+        this.scene.world.addBody(this.body);
+        this.scene.registerBody(this.body, this);
 
         // Wireframe mesh for visual debugging
         if (show_wireframe) {
@@ -109,7 +111,7 @@ class Player extends Group {
         });
 
         // Add self to parent's update list
-        parent.addToUpdateList(this);
+        this.scene.addToUpdateList(this);
         // event handler for colliding with world
         this.body.addEventListener('collide', this.collideHandler.bind(this));
     }
@@ -138,6 +140,7 @@ class Player extends Group {
         if (this.state.contactNormal.dot(upAxis) > 0.5) {
             // Use a "good" threshold value between 0 and 1 here!
             this.state.canJump = true;
+            this.body.linearDamping = 0.75;
         }
     }
 

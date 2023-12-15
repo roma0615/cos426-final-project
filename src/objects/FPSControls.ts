@@ -102,6 +102,7 @@ class FPSControls {
             // apply impluse vertically
             this.getBody().velocity.y += this.getPlayer().state.jumpVelocity;
             this.getPlayer().state.canJump = false;
+            this.getPlayer().body.linearDamping = 0.2;
         }
 
 
