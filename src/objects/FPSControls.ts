@@ -68,7 +68,8 @@ class FPSControls {
             this.game.restart();
         }
         if (event.key == "g") { // flip gravity
-            this.getPlayer().setGravity(this.getPlayer().state.gravity.scale(-1));
+            // this.getPlayer().setGravity(this.getPlayer().state.gravity.scale(-1));
+            this.getPlayer().setGravity(new CANNON.Vec3(10, -0.3, 0));
         }
         if (event.code == "ArrowRight") {
             this.game.setLevel(this.game.activeLevel+1);
@@ -138,29 +139,17 @@ class FPSControls {
         this.state.cameraAngle.x = MathUtils.lerp(this.state.cameraAngle.x, this.getPlayer().state.cameraAngle.x, 0.15);
         this.state.cameraAngle.y = MathUtils.lerp(this.state.cameraAngle.y, this.getPlayer().state.cameraAngle.y, 0.15);
 
-        // move closer if walls in the way
-        // const playerPos = this.getPlayer().position.clone().add(new Vector3(0, 0.5, 0));
-        // const camPos = new Vector3();
-        // this.camera.getWorldPosition(camPos)
-        // const desiredPos = camPos.clone().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
-        // const result = new CANNON.RaycastResult();
-        // this.game.getLevel().world.raycastClosest(threeVectorToCannon(playerPos), threeVectorToCannon(desiredPos), { collisionFilterMask: COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS }, result);
-        // const resDist = Math.abs(result.distance + 1) < EPS ? this.cameraDistance * 10 : result.distance;
-        // const dist = Math.max(1, Math.min(resDist * 0.75, this.cameraDistance));
-        // this.camera.position.setFromSphericalCoords(dist, this.state.cameraAngle.y, this.state.cameraAngle.x);
-
-        // next goal:  orient the player to appear the "right way up" according to its local gravity vector
+        // next goal: orient the player to appear the "right way up" according to its local gravity vector
         // useful variables
         const normGrav = cannonVecToThree(this.getPlayer().state.gravity);           // normalized gravity
         normGrav.normalize();
         const localUp = new CANNON.Vec3(0, 1, 0);                                    // up direction in local space
         const globalUp = threeVectorToCannon(normGrav).scale(-1);                    // up direction in WORLD SPACE
         const alignTop = new CANNON.Quaternion().setFromVectors(localUp, globalUp);  // rotation to convert from local to global
-        // const gravAngle = 
+        const alignTopT = cannonQuatToThree(alignTop);
 
         // 1) inital setting of quaternion to match gravity
         const alignTopCamera = cannonQuatToThree(alignTop.mult(new CANNON.Quaternion().setFromAxisAngle(localUp, -Math.PI / 2)));
-        // const alignTopCamera = cannonQuatToThree(alignTop.mult(new CANNON.Quaternion().setFromAxisAngle(localUp, 0))); // 0 if we apply after lookAt
         this.camera.quaternion.copy(new Quaternion());
         this.camera.applyQuaternion(alignTopCamera); // GOOD, KEEP THIS
 
@@ -171,24 +160,21 @@ class FPSControls {
         // have to reimplement lookAt with quaternions
         // PART 1: around globalUp axis (moving mouse left/right)
         const camToBody = cannonVecToThree(bodyPos).sub(this.camera.position);
-        // const lookAtBody = new Quaternion().setFromUnitVectors(new Vector3(1, 0, 0), camToBody).slerp(new Quaternion(), 0.5); // kinda works, rotates weird
 
         // camBody: need to remove the part that's in line with the axis
-        // const camToBodyNoY = camToBody.clone().setY(0).normalize();
         const axis = cannonVecToThree(globalUp);
         const camToBodyOrth = camToBody.clone().sub(camToBody.clone().projectOnVector(axis));
-        const angle = new Vector3(1, 0, 0).angleTo(camToBodyOrth); // how to get signed angle?
-        const cross = new Vector3(1, 0, 0).cross(camToBodyOrth); // how to get signed angle?
+        const angle = new Vector3(1, 0, 0).applyQuaternion(alignTopT).angleTo(camToBodyOrth); // how to get signed angle?
+        const cross = new Vector3(1, 0, 0).applyQuaternion(alignTopT).cross(camToBodyOrth); // how to get signed angle?
         const flip = axis.dot(cross) >= -EPS ? 1 : -1;
         const signedAngle = flip * angle; // should be between [0, 2pi] now
         const lookAtBody = new Quaternion().setFromAxisAngle(axis, signedAngle);
         this.camera.applyQuaternion(lookAtBody);
 
-        // part 2: around camera's horizontal axis (pitch)
+        // PART 2: around camera's horizontal axis (pitch)
         const cameraWorldDir = new Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
         cameraWorldDir.normalize(); // ok so this is right
         const pitchAxis = new Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion); // +x is right in local camera space
-        console.log(pitchAxis);
         // can use camToBody now, since there should be no more parallel component we don't want
         const angle2 = cameraWorldDir.clone().angleTo(camToBody); // how to get signed angle?
         const cross2 = cameraWorldDir.clone().cross(camToBody); // how to get signed angle?
@@ -196,16 +182,7 @@ class FPSControls {
         const signedAngle2 = flip2 * angle2; // should be between [0, 2pi] now
         const lookAtBody2 = new Quaternion().setFromAxisAngle(pitchAxis, signedAngle2);
         this.camera.applyQuaternion(lookAtBody2);
-
-        // const angle2 = cameraWorldDir.clone().angleTo(camToBody);
-        // const lookAtBody2 = new Quaternion().setFromAxisAngle(pitchAxis, -angle2);
-        // this.camera.applyQuaternion(lookAtBody2);
-
-
-        // this.camera.applyQuaternion(new Quaternion().setFromAxisAngle(axis, Math.PI));
-
-        // this.camera.lookAt(cannonVecToThree(bodyPos)); // undoes everything
-        // this.camera.applyQuaternion(alignTopCamera); // GOOD, KEEP THIS
+        // kinda working here..
 
 
         // STILL HAVE TO FIX THIS
