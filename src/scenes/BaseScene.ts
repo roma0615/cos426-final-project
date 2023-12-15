@@ -30,6 +30,11 @@ class BaseScene extends Scene {
         players: Player[];
         activePlayer: number;
     };
+    materials: {
+        ground: CANNON.Material;
+        player: CANNON.Material;
+    };
+    bodyToObj: Map<CANNON.Body, any>;
     timeStep: number;
     world: CANNON.World;
     clock: Clock;
@@ -42,8 +47,15 @@ class BaseScene extends Scene {
         // Init world
         this.timeStep = 1 / 60;
         this.world = new CANNON.World({
-            gravity: new CANNON.Vec3(0, -9.82, 0), // TODO: this should somehow be player specific.. maybe two worlds one for each player?
+            gravity: new CANNON.Vec3(0, -0.001, 0),  // sideways gravity for testing friction
         });
+        // setup materials
+        this.materials = {
+            ground: new CANNON.Material('ground'),
+            player: new CANNON.Material('player'),
+        };
+        this._initContactMaterials();
+        
 
         // Init state
         this.state = {
@@ -53,6 +65,8 @@ class BaseScene extends Scene {
             players: [],
             activePlayer: 0,
         };
+
+        this.bodyToObj = new Map<CANNON.Body, any>();
 
         // add lights
         const lights = new BasicLights();
@@ -68,9 +82,45 @@ class BaseScene extends Scene {
         );
     }
 
+    _initContactMaterials() {
+        // add contact materials
+        this.world.addContactMaterial(
+            new CANNON.ContactMaterial(
+                this.materials.ground,
+                this.materials.player,
+                {
+                    friction: 1,
+                    restitution: 0.3,
+                    contactEquationStiffness: 1e8,
+                    contactEquationRelaxation: 3,
+                    frictionEquationStiffness: 1e8,
+                }
+            )
+        );
+        this.world.addContactMaterial(
+            new CANNON.ContactMaterial(
+                this.materials.player,
+                this.materials.player,
+                {
+                    friction: 0,
+                    restitution: 0.3,
+                    contactEquationStiffness: 1e8,
+                    contactEquationRelaxation: 3,
+                }
+            )
+        );
+    }
+
     addToUpdateList(object: UpdateChild): void {
-        console.log("Adding to update list:", object.update)
         this.state.updateList.push(object);
+    }
+
+    registerBody(body: CANNON.Body, obj: any) {
+        // store in a mapping from body to its owner object
+        this.bodyToObj.set(body, obj);
+    }
+    getObjByBody(body: CANNON.Body) {
+        return this.bodyToObj.get(body);
     }
 
     getActivePlayer(): Player {

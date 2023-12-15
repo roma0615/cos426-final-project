@@ -50,14 +50,20 @@ class LevelObject extends Group {
         // Init body
         this.body = new CANNON.Body({
             type: this.bodyType,
-            mass: this.mass,
+            mass: this.bodyType == CANNON.Body.STATIC ? 0 : this.mass,
+            linearDamping: 0.5,
+            material: parent.materials.ground,
             position: this.initialOffset as any,
             collisionFilterGroup:
                 options.collisionGroup || COLLISION_GROUPS.OBJECTS,
-            collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS,
+            collisionFilterMask:
+                COLLISION_GROUPS.PLAYER |
+                COLLISION_GROUPS.SCENE |
+                COLLISION_GROUPS.OBJECTS,
         });
         // this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         parent.world.addBody(this.body);
+        parent.registerBody(this.body, this);
 
         const loader = new GLTFLoader();
 
@@ -65,13 +71,18 @@ class LevelObject extends Group {
 
         loader.load(this.modelName, (gltf) => {
             this.add(gltf.scene);
-            const objs = this.generateShapesOfChildren ? gltf.scene.children : [gltf.scene];
-            console.log("Creating shape for", objs);
+            const objs = this.generateShapesOfChildren
+                ? gltf.scene.children
+                : [gltf.scene];
             objs.forEach((c) => {
                 const result = threeToCannon(c);
                 const { shape, offset, quaternion } = result;
                 this.body.addShape(shape, offset, quaternion);
             });
+            // var model = gltf.scene;
+            // model.traverse((o) => {
+            //     if (o.isMesh) o.material.wireframe = true;
+            // });
         });
 
         this.body.addEventListener('collide', this.collideHandler.bind(this));
@@ -85,13 +96,20 @@ class LevelObject extends Group {
         if (this.collideCallback) this.collideCallback(this, e);
     }
 
+    // given a contact event e, return the other body
+    static getOtherBody(self: LevelObject, e: any) {
+        const otherBody =
+            e.contact.bi.id == self.body.id ? e.contact.bj : e.contact.bi;
+        return otherBody;
+    }
+
     update(timeStamp: number) {
         if (this.updateCallback) this.updateCallback(timeStamp);
 
         if (this.bodyType == CANNON.Body.DYNAMIC) {
             // copy cannon physics to group mesh
             // custom gravity
-            // this.body.applyForce(new CANNON.Vec3(0, -9.82, 0)); // todo uncomment
+            this.body.applyForce(new CANNON.Vec3(0, -9.82, 0));
 
             this.position.copy(this.body.position as any);
             this.quaternion.copy(this.body.quaternion as any);

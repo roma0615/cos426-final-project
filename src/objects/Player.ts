@@ -29,6 +29,7 @@ class Player extends Group {
         jumpVelocity: number;
 
         gravity: CANNON.Vec3;
+        gravityClock: Clock
     };
     body: CANNON.Body;
     clock: Clock;
@@ -55,21 +56,24 @@ class Player extends Group {
             canJump: false,
             quat: new Quaternion(),
             walkSpeed: 0.1,
-            jumpVelocity: 7.5,
+            jumpVelocity: 9,
             gravity: new CANNON.Vec3(0, -9.82, 0),
+            gravityClock: new Clock(),
         };
 
         // Init body
         this.body = new CANNON.Body({
             mass: 1,
+            linearDamping: 0.5,
+            angularDamping: 0.5,
+            material: parent.materials.player,
             shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
             position: initialPos,
             collisionFilterGroup: COLLISION_GROUPS.PLAYER,
             collisionFilterMask: COLLISION_GROUPS.PLAYER | COLLISION_GROUPS.SCENE | COLLISION_GROUPS.OBJECTS
         });
         parent.world.addBody(this.body);
-        // Add self to parent's update list
-        parent.addToUpdateList(this);
+        parent.registerBody(this.body, this);
 
         // Wireframe mesh for visual debugging
         if (show_wireframe) {
@@ -98,30 +102,22 @@ class Player extends Group {
 
             // animations
             this.anim.mixer = new AnimationMixer(scene);
-            console.log(this.anim.mixer)
             this.anim.clips = gltf.animations; // don't have to copy clips between object instances
             const idleAnim = AnimationClip.findByName(this.anim.clips, 'idle');
             this.anim.action = this.anim.mixer.clipAction(idleAnim);
             this.anim.action.play(); // start with idle
         });
 
+        // Add self to parent's update list
+        parent.addToUpdateList(this);
         // event handler for colliding with world
         this.body.addEventListener('collide', this.collideHandler.bind(this));
     }
 
-    // keeping for animation reference
-    // spin(): void {
-    //     // Add a simple twirl
-    //     this.state.twirl += 6 * Math.PI;
-    //     // Use timing library for more precice "bounce" animation
-    //     // TweenJS guide: http://learningthreejs.com/blog/2011/08/17/tweenjs-for-smooth-animation/
-    //     // Possible easings: http://sole.github.io/tween.js/examples/03_graphs.html
-    //     const jumpUp = new TWEEN.Tween(this.body.position)
-    //         .to({ y: this.body.position.y + 1 }, 300)
-    //         .easing(TWEEN.Easing.Quadratic.Out);
-    //     // Start animation
-    //     jumpUp.start();
-    // }
+    setGravity(newGrav: CANNON.Vec3) {
+        // gravity set cooldown is 0.5 seconds
+        if (this.state.gravityClock.getDelta() > 0.5) this.state.gravity.copy(newGrav);
+    }
 
     collideHandler(e: any) {
         const upAxis = new CANNON.Vec3(0, 1, 0);
@@ -137,8 +133,6 @@ class Player extends Group {
             otherBody = contact.bj;
         }
         else this.state.contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
-
-        console.log("Collide handler activated. Other body is", otherBody)
 
         // If contactNormal.dot(upAxis) is between 0 and 1, we know that the contact normal is somewhat in the up direction.
         if (this.state.contactNormal.dot(upAxis) > 0.5) {
@@ -163,16 +157,8 @@ class Player extends Group {
     }
 
     update(timeStamp: number): void {
-        // if (this.state.twirl > 0) {
-        //     // Lazy implementation of twirl
-        //     this.state.twirl -= Math.PI / 8;
-        //     this.body.quaternion.setFromEuler(0, this.state.twirl, 0, 'XYZ');
-        // }
-        // this.body.applyForce(this.state.gravity);
-        // this.body.applyForce(new CANNON.Vec3(0, -1, 0));
-
-        // // Advance tween animations, if any exist
-        // TWEEN.update();
+        // apply the player's gravity
+        this.body.applyLocalForce(this.state.gravity);
 
         // Update physics
         this.position.copy(this.body.position as any);

@@ -60,9 +60,6 @@ class FPSControls {
         if (["w", "a", "s", "d", " "].includes(event.key)) {
             this.state.keysPressed.add(event.key);
         }
-        if (event.key == "g") {
-            this.getPlayer().state.gravity.scale(-1);
-        }
     };
 
     onKeyUp (event: KeyboardEvent) {

@@ -1,11 +1,11 @@
-import dat from 'dat.gui';
-import { Scene, Color, Sphere, Vector3, SphereGeometry, Mesh, Clock } from 'three';
+import { Vector3 } from 'three';
 
 import * as CANNON from 'cannon-es';
 
 import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
 import BaseScene from './BaseScene';
+import Land from '../objects/Land';
 
 export enum COLLISION_GROUPS {
     PLAYER = 1,
@@ -18,7 +18,7 @@ class Level01Scene extends BaseScene {
 
     constructor() {
         // Call parent BaseScene() constructor
-        super(); // 
+        super();
 
         const player1 = new Player(0, this, new CANNON.Vec3(-7, 2, -2.5), this.clock);
         const player2 = new Player(1, this, new CANNON.Vec3(-7, 2, 2.5), this.clock);
@@ -29,19 +29,20 @@ class Level01Scene extends BaseScene {
         this.state.activePlayer = 0;
 
         // --- LEVEL COMPONENTS --- //
+        // const level = new Land(this, true);
         const level = new LevelObject(this, 'level1', {
             bodyType: CANNON.Body.STATIC,
             collisionGroup: COLLISION_GROUPS.SCENE,
             generateShapesOfChildren: true,
         });
+
+
         // start pad
         const pad = new LevelObject(this, 'landing_pad', {
             collideCallback: (self, e) => {
-                const otherBody =
-                    e.contact.bi.id == self.body.id
-                        ? e.contact.bj
-                        : e.contact.bi;
-                console.log('Other body', otherBody);
+                const otherObj = this.getObjByBody(LevelObject.getOtherBody(self, e));
+                // otherBody.parent
+                // this.getActivePlayer().state.gravity = this.getActivePlayer().state.gravity.scale(-1);
             },
             offset: new Vector3(10, 0, 0),
         });
@@ -50,16 +51,18 @@ class Level01Scene extends BaseScene {
         const cube = new LevelObject(this, 'cube', {
             mass: 1,
             collideCallback: (self, e) => {
-                const otherBody =
-                    e.contact.bi.id == self.body.id
-                        ? e.contact.bj
-                        : e.contact.bi;
-                console.log('U PUSHED THE CUBE YAY', otherBody);
+                const otherObj = this.getObjByBody(LevelObject.getOtherBody(self, e));
+                // demo: invert gravity once u touch the red box
+                if (otherObj instanceof Player) {
+                    const p = otherObj as Player;
+                    p.setGravity(p.state.gravity.scale(-1));
+                }
             },
             offset: new Vector3(6, 0, 2),
         });
 
         this.add(level, cube, player1, player2, pad);
+        // this.add(level, player1, player2);
     }
 }
 
