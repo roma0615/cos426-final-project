@@ -98,7 +98,7 @@ class BaseScene extends Scene {
                 {
                     friction: 0.2,
                     restitution: 0.3,
-                    contactEquationStiffness: 5e3, // softer
+                    contactEquationStiffness: 1e3, // softer
                     contactEquationRelaxation: 3,
                     frictionEquationStiffness: 1e8,
                 }

@@ -30,6 +30,8 @@ class Level04Scene extends BaseScene {
         this.state.activePlayer = 0;
 
         // --- LEVEL COMPONENTS --- //
+        const upsideDown = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, -1, 0));
+
         // const level = new Land(this, true);
         const level = new LevelObject(this, 'level4', {
             bodyType: CANNON.Body.STATIC,
@@ -37,9 +39,7 @@ class Level04Scene extends BaseScene {
             generateShapesOfChildren: true,
         });
 
-
-        // gravity pad!!! omg
-        const gravityPad = new LevelObject(this, 'gravity_pad', {
+        const gravityPadConfig = () => ({
             bodyType: CANNON.Body.STATIC,
             generateShapesOfChildren: true,
             collideCallback: (self, e) => {
@@ -51,12 +51,20 @@ class Level04Scene extends BaseScene {
                     // this.state.p1OnPad = true;
                 }
             },
-            offset: new Vector3(7, 0, 7),
-            // quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(-1, 3, -1).normalize())
-            // quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(-1, -1, -1).normalize())
         });
 
-        // landing pad
+        // gravity pad!!! omg
+        const gravityPad = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(0, 0, 0),
+        });
+        const gravityPad2 = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(-7, 19, 7),
+            quaternion: upsideDown,
+        });
+
+        // landing pad on the ceiling.
         const pad1 = new LevelObject(this, 'landing_pad1', {
             bodyType: CANNON.Body.STATIC,
             collideCallback: (self, e) => {
@@ -71,7 +79,8 @@ class Level04Scene extends BaseScene {
                     this.state.p1OnPad = false;
                 }
             },
-            offset: new Vector3(10, 0, -5),
+            offset: new Vector3(-7, 19, 0),
+            quaternion: upsideDown,
         });
         // landing pad
         const pad2 = new LevelObject(this, 'landing_pad2', {
@@ -88,24 +97,10 @@ class Level04Scene extends BaseScene {
                     this.state.p2OnPad = false;
                 }
             },
-            offset: new Vector3(10, 0, 5),
+            offset: new Vector3(7, 0, 0),
         });
 
-        // cube for pushing into place
-        const cube = new LevelObject(this, 'cube', {
-            mass: 1,
-            collideCallback: (self, e) => {
-                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
-                // demo: invert gravity once u touch the red box
-                if (otherObj instanceof Player) {
-                    const p = otherObj as Player;
-                    p.setGravity(p.state.gravity.scale(-1));
-                }
-            },
-            offset: new Vector3(6, 0, -2),
-        });
-
-        this.add(level, cube, player1, player2, pad1, pad2, gravityPad);
+        this.add(level, player1, player2, pad1, pad2, gravityPad, gravityPad2);
         // this.add(level, player1, player2);
     }
 

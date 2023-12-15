@@ -4,7 +4,7 @@ import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
-import { EPS, cannonVecToThree, threeVectorToCannon } from '../utils';
+import { EPS, cannonQuatToThree, cannonVecToThree, threeVectorToCannon } from '../utils';
 import BaseScene from '../scenes/BaseScene';
 import Game from '../Game';
 
@@ -118,6 +118,10 @@ class FPSControls {
             // jump and remove
             // apply impluse vertically (IN THE LOCAL SPACE, according to player's gravity)
             const upLocal = this.getPlayer().state.gravity.scale(-this.getPlayer().state.jumpVelocity);
+            // remove any jump vel in jump direction 
+            const jumpVel = cannonVecToThree(this.getBody().velocity).projectOnVector(cannonVecToThree(upLocal));
+            this.getBody().velocity.vsub(threeVectorToCannon(jumpVel));
+            // now apply new jump impulse
             this.getBody().applyImpulse(upLocal.scale(0.1));
 
             this.getPlayer().state.canJump = false;
@@ -147,13 +151,13 @@ class FPSControls {
         // useful things
         const normGrav = cannonVecToThree(this.getPlayer().state.gravity);
         normGrav.normalize();
-        const localUp = threeVectorToCannon(normGrav).scale(-1);
-        const alignTop = new CANNON.Quaternion().setFromVectors(new CANNON.Vec3(0, 1, 0), localUp);
+        const localUp = new CANNON.Vec3(0, 1, 0);
+        const globalUp = threeVectorToCannon(normGrav).scale(-1); // up in WORLD SPACE
+        const alignTop = new CANNON.Quaternion().setFromVectors(localUp, globalUp);
+        // const gravAngle = 
 
         // old way:
         this.camera.position.setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, this.state.cameraAngle.x);
-        // 
-
         // point camera at player
         const bodyPos = cannonVecToThree(this.getBody().position);
         this.camera.position.add(bodyPos);
@@ -173,7 +177,7 @@ class FPSControls {
         // TODO rotate player to look at camera and be oriented "upright" relative to its gravity
         // this.getBody().quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.state.cameraAngle.x + Math.PI / 2);
         const rotAroundGravAxis = new CANNON.Quaternion().setFromAxisAngle(
-            new CANNON.Vec3(0, 1, 0), // after applying alignTop, this is the up direction
+            localUp, // after applying alignTop, working in local space
             this.state.cameraAngle.x + Math.PI / 2
         );
         this.getBody().quaternion.copy(alignTop.mult(rotAroundGravAxis));
@@ -191,10 +195,24 @@ class FPSControls {
 
 
         // Goal: convert velocity to world coordinates based on direction of camera
-        // player's state.quat stores rotation to look in the dir that the camera is looking
+        // player's state.quat stores rotation of plane to WALK IN (canceling out movement in gravity direction)
         this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDirCorrected);
         inputVelocity.applyQuaternion(this.getPlayer().state.quat);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
+
+
+        // apply alignTop to the camera?
+        // goal: create a vector that points from player to where camera would be (using spherical corods)
+        // const camPosWithRot = new Vector3().setFromSphericalCoords(this.cameraDistance, this.state.cameraAngle.y, -Math.PI / 2);
+        // camPosWithRot.applyQuaternion(cannonQuatToThree(this.getBody().quaternion));
+        // // then rotate that vector according to something ? body.state.quat?
+        // // whatever rotation is on the player
+        // // point camera at player again with this new thing
+        // this.camera.position.copy(camPosWithRot);
+        // this.camera.position.add(bodyPos); // add to body 
+        // this.camera.lookAt(bodyPos); // look at it
+
+        // this.camera.quaternion.multiply(cannonQuatToThree(rotAroundGravAxis));
 
         // POSITION APPROACH
         this.getBody().position.x += inputVelocity.x;
