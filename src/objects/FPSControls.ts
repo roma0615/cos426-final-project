@@ -176,19 +176,26 @@ class FPSControls {
         // camBody: need to remove the part that's in line with the axis
         // const camToBodyNoY = camToBody.clone().setY(0).normalize();
         const axis = cannonVecToThree(globalUp);
-        const camToBodyOrth = camToBody.clone().sub(camToBody.projectOnVector(axis));
+        const camToBodyOrth = camToBody.clone().sub(camToBody.clone().projectOnVector(axis));
         const angle = new Vector3(1, 0, 0).angleTo(camToBodyOrth); // how to get signed angle?
         const cross = new Vector3(1, 0, 0).cross(camToBodyOrth); // how to get signed angle?
         const flip = axis.dot(cross) >= -EPS ? 1 : -1;
         const signedAngle = flip * angle; // should be between [0, 2pi] now
         const lookAtBody = new Quaternion().setFromAxisAngle(axis, signedAngle);
         this.camera.applyQuaternion(lookAtBody);
-        console.log(angle);
 
-        // part 2: around camera's local . direction camera is looking, and globalUp
-        const cameraWorldDir = new Vector3();
-        // this.camera.getWorldDirection(cameraWorldDir);
-        // const pitchAxis = cameraWorldDir.cross(axis);
+        // part 2: around camera's horizontal axis (pitch)
+        const cameraWorldDir = new Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+        cameraWorldDir.normalize(); // ok so this is right
+        const pitchAxis = new Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion); // +x is right in local camera space
+        console.log(pitchAxis);
+        // can use camToBody now, since there should be no more parallel component we don't want
+        const angle2 = cameraWorldDir.clone().angleTo(camToBody); // how to get signed angle?
+        const cross2 = cameraWorldDir.clone().cross(camToBody); // how to get signed angle?
+        const flip2 = pitchAxis.dot(cross2) >= -EPS ? 1 : -1;
+        const signedAngle2 = flip2 * angle2; // should be between [0, 2pi] now
+        const lookAtBody2 = new Quaternion().setFromAxisAngle(pitchAxis, signedAngle2);
+        this.camera.applyQuaternion(lookAtBody2);
 
         // const angle2 = cameraWorldDir.clone().angleTo(camToBody);
         // const lookAtBody2 = new Quaternion().setFromAxisAngle(pitchAxis, -angle2);
