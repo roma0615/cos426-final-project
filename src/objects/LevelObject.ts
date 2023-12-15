@@ -13,6 +13,7 @@ interface Options {
     offset: Vector3;
     quaternion: Quaternion;
     bodyType: CANNON.BodyType;
+    isTrigger: boolean;
     collisionGroup: COLLISION_GROUPS;
     generateShapesOfChildren: boolean;
     mass: number;
@@ -27,6 +28,7 @@ class LevelObject extends Group {
     body: CANNON.Body;
     modelName: string;
     bodyType: CANNON.BodyType | undefined;
+    isTrigger: boolean;
     initialOffset: Vector3;
     initialQuaternion: Quaternion;
     mass: number;
@@ -46,6 +48,7 @@ class LevelObject extends Group {
         this.initialOffset = options.offset || new Vector3(0, 0, 0);
         this.initialQuaternion = options.quaternion || new Quaternion();
         this.bodyType = options.bodyType || CANNON.Body.DYNAMIC;
+        this.isTrigger = options.isTrigger || false;
         this.mass = options.mass || 1;
         this.generateShapesOfChildren =
             options.generateShapesOfChildren || false;
@@ -57,6 +60,7 @@ class LevelObject extends Group {
         this.body = new CANNON.Body({
             type: this.bodyType,
             mass: this.bodyType == CANNON.Body.STATIC ? 0 : this.mass,
+            isTrigger: this.isTrigger,
             linearDamping: 0.75,
             material: parent.materials.ground,
             position: this.initialOffset as any,

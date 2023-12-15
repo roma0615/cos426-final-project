@@ -41,6 +41,7 @@ class Level03Scene extends BaseScene {
 
         const gravityPadConfig = () => ({
             bodyType: CANNON.Body.STATIC,
+            isTrigger: true,
             generateShapesOfChildren: true,
             collideCallback: (self: LevelObject, e: any) => {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
