@@ -1,4 +1,4 @@
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Vector3 } from 'three';
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Quaternion, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from 'three-to-cannon';
@@ -11,6 +11,7 @@ import { threeVectorToCannon } from '../utils';
 
 interface Options {
     offset: Vector3;
+    quaternion: Quaternion;
     bodyType: CANNON.BodyType;
     collisionGroup: COLLISION_GROUPS;
     generateShapesOfChildren: boolean;
@@ -27,6 +28,7 @@ class LevelObject extends Group {
     modelName: string;
     bodyType: CANNON.BodyType | undefined;
     initialOffset: Vector3;
+    initialQuaternion: Quaternion;
     mass: number;
     generateShapesOfChildren: boolean;
     collideCallback: ((self: LevelObject, e: any) => void) | undefined;
@@ -42,6 +44,7 @@ class LevelObject extends Group {
         super();
         this.modelName = `src/objects/${modelName}.glb?url`;
         this.initialOffset = options.offset || new Vector3(0, 0, 0);
+        this.initialQuaternion = options.quaternion || new Quaternion();
         this.bodyType = options.bodyType || CANNON.Body.DYNAMIC;
         this.mass = options.mass || 1;
         this.generateShapesOfChildren =
@@ -57,6 +60,7 @@ class LevelObject extends Group {
             linearDamping: 0.75,
             material: parent.materials.ground,
             position: this.initialOffset as any,
+            quaternion: this.initialQuaternion as any,
             collisionFilterGroup:
                 options.collisionGroup || COLLISION_GROUPS.OBJECTS,
             collisionFilterMask:
@@ -100,7 +104,8 @@ class LevelObject extends Group {
 
         parent.addToUpdateList(this);
 
-        this.position.add(this.initialOffset);
+        this.position.copy(this.initialOffset);
+        this.quaternion.copy(this.initialQuaternion);
     }
 
     collideHandler(e: any) {

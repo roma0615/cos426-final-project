@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Quaternion, Vector3 } from 'three';
 
 import * as CANNON from 'cannon-es';
 
@@ -46,11 +46,13 @@ class Level04Scene extends BaseScene {
                 const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
                 if (otherObj instanceof Player) {
                     const p = otherObj as Player;
-                    p.setGravity(p.state.gravity.scale(-1));
+                    // set gravity in the orientation of the pad
+                    p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
                     // this.state.p1OnPad = true;
                 }
             },
-            offset: new Vector3(7, 0, 7)
+            offset: new Vector3(7, 0, 7),
+            quaternion: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(-1, 3, -1).normalize())
         });
 
         // landing pad

@@ -116,8 +116,10 @@ class FPSControls {
         }
         if (this.state.keysPressed.has(" ") && canJump) {
             // jump and remove
-            // apply impluse vertically
-            this.getBody().velocity.y += this.getPlayer().state.jumpVelocity;
+            // apply impluse vertically (IN THE LOCAL SPACE, according to player's gravity)
+            const upLocal = this.getPlayer().state.gravity.scale(-this.getPlayer().state.jumpVelocity);
+            this.getBody().applyImpulse(upLocal.scale(0.1));
+
             this.getPlayer().state.canJump = false;
             this.getPlayer().body.linearDamping = 0.2;
         }
@@ -156,10 +158,14 @@ class FPSControls {
         // Convert velocity to world coordinates based on direction of camera
         const cameraWorldDir = new Vector3();
         this.camera.getWorldDirection(cameraWorldDir);
-        cameraWorldDir.setY(0).normalize();
-        // console.log("camera world dir:", cameraWorldDir);
+        // subtract the upAxis direction projection and then normalize
+        const normGrav = cannonVecToThree(this.getPlayer().state.gravity);
+        normGrav.normalize();
+        const correction = cameraWorldDir.projectOnVector(normGrav);
+        cameraWorldDir.sub(correction).normalize();
+
+        // player's state.quat stores rotation to look in the dir that the camera is looking
         this.getPlayer().state.quat.setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDir);
-        // inputVelocity.applyAxisAngle(new Vector3(0, 1, 0));
         inputVelocity.applyQuaternion(this.getPlayer().state.quat);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
 
@@ -181,6 +187,7 @@ class FPSControls {
 
         // POSITION APPROACH
         this.getBody().position.x += inputVelocity.x;
+        this.getBody().position.y += inputVelocity.y;
         this.getBody().position.z += inputVelocity.z;
 
         // handle animation

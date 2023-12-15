@@ -134,7 +134,8 @@ class Player extends Group {
     }
 
     collideHandler(e: any) {
-        const upAxis = new CANNON.Vec3(0, 1, 0);
+        const upAxis = this.state.gravity.scale(-1);
+        upAxis.normalize();
         const contact = e.contact;
 
         let otherBody = contact.bi;
@@ -179,6 +180,9 @@ class Player extends Group {
 
         // Update physics
         this.position.copy(this.body.position as any);
+
+
+        // this.quaternion.slerp(this.body.quaternion as any, 0.15);
         this.quaternion.copy(this.body.quaternion as any);
 
         // play animation mixer
