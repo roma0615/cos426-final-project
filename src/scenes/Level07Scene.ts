@@ -5,6 +5,7 @@ import * as CANNON from 'cannon-es';
 import Player from '../objects/Player';
 import BaseScene, { COLLISION_GROUPS } from './BaseScene';
 import Game from '../Game';
+import LevelObject from '../objects/LevelObject';
 
 class Level07Scene extends BaseScene {
 
@@ -19,6 +20,12 @@ class Level07Scene extends BaseScene {
         }
         const player1 = new Player(0, this, this.clock, new CANNON.Vec3(3, 10, 0), new CANNON.Vec3(0, -9.82, 0), pUpdateHandler);
         const player2 = new Player(1, this, this.clock, new CANNON.Vec3(-3, 10, 0), new CANNON.Vec3(0, -9.82, 0), pUpdateHandler); // upside down gravity
+
+        const thanks = new LevelObject(this, 'thanks', {
+            bodyType: CANNON.Body.STATIC,
+            collisionGroup: COLLISION_GROUPS.SCENE,
+            generateShapesOfChildren: true,
+        })
 
         // update state
         this.state.players.push(player1);
@@ -39,7 +46,7 @@ class Level07Scene extends BaseScene {
         });
         this.world.addBody(planetBody);
 
-        this.add(player1, player2, planet);
+        this.add(player1, player2, planet, thanks);
         // this.add(level, player1, player2);
     }
 
