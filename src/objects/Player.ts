@@ -1,7 +1,6 @@
 import { Group, BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Quaternion, AnimationMixer, AnimationClip, Clock, AnimationAction } from 'three';
-import { GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 import * as CANNON from 'cannon-es';
 
 import BaseScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
@@ -42,7 +41,7 @@ class Player extends Group {
         clock: Clock,
         initialPos = new CANNON.Vec3(),
         gravity = new CANNON.Vec3(0, -9.82, 0),
-        customUpdate = (self: Player, timeStamp: number) => {},
+        customUpdate = (_self: Player, _timeStamp: number) => {},
         show_wireframe = false,
     ) {
         // Call parent Group() constructor

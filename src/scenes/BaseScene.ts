@@ -1,13 +1,10 @@
 import dat from 'dat.gui';
-import { Scene, Color, Sphere, Vector3, SphereGeometry, Mesh, Clock } from 'three';
+import { Scene, Color, Clock } from 'three';
 
 import * as CANNON from 'cannon-es';
-import TWEEN from 'three/examples/jsm/libs/tween.module.js';
 
 import Player from '../objects/Player';
-import Land from '../objects/Platform';
 import BasicLights from '../lights/BasicLights';
-import LevelObject from '../objects/LevelObject';
 import Game from '../Game';
 
 // Define an object type which describes each object in the update list

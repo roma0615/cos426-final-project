@@ -5,7 +5,6 @@ import * as CANNON from 'cannon-es';
 import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
 import BaseScene, { COLLISION_GROUPS } from './BaseScene';
-import Land from '../objects/Platform';
 import Game from '../Game';
 
 class Level03Scene extends BaseScene {
@@ -67,7 +66,7 @@ class Level03Scene extends BaseScene {
                     this.state.p1OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -85,7 +84,7 @@ class Level03Scene extends BaseScene {
                     this.state.p2OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player2.name) {
                     this.state.p2OnPad = false;

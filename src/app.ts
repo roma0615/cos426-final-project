@@ -6,13 +6,9 @@
  * handles window resizes.
  *
  */
-import { WebGLRenderer, PerspectiveCamera, Vector3, SRGBColorSpace, LinearSRGBColorSpace, LinearDisplayP3ColorSpace, DisplayP3ColorSpace } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Vector3 } from 'three';
 
 import FPSControls from './objects/FPSControls';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
-import Level01Scene from './scenes/Level01Scene';
-import Level02Scene from './scenes/Level02Scene';
 import Game from './Game';
 
 import TWEEN from 'three/examples/jsm/libs/tween.module.js';

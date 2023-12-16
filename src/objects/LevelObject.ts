@@ -1,4 +1,4 @@
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Quaternion, Vector3 } from 'three';
+import { Group, Quaternion, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from 'three-to-cannon';
@@ -6,8 +6,6 @@ import { threeToCannon } from 'three-to-cannon';
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 
 // Import land model as a URL using Vite's syntax
-import MODEL from './landing_pad.glb?url';
-import { threeVectorToCannon } from '../utils';
 
 interface Options {
     offset: Vector3;

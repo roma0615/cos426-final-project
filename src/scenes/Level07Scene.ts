@@ -1,12 +1,10 @@
-import { Mesh, MeshBasicMaterial, MeshPhongMaterial, Quaternion, SphereGeometry, Vector3 } from 'three';
+import { Mesh, MeshPhongMaterial, SphereGeometry } from 'three';
 
 import * as CANNON from 'cannon-es';
 
 import Player from '../objects/Player';
-import LevelObject from '../objects/LevelObject';
 import BaseScene, { COLLISION_GROUPS } from './BaseScene';
 import Game from '../Game';
-import Platform from '../objects/Platform';
 
 class Level07Scene extends BaseScene {
 
@@ -14,9 +12,7 @@ class Level07Scene extends BaseScene {
         // Call parent BaseScene() constructor
         super(game);
 
-        const up = new Vector3(0, 1, 0);
-
-        const pUpdateHandler = (self: Player, timeStamp: number) => {
+        const pUpdateHandler = (self: Player, _timeStamp: number) => {
             const grav = self.body.position.clone();
             grav.normalize();
             self.state.gravity.copy(grav.scale(-9.81));

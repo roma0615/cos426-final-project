@@ -24,7 +24,6 @@ class Level05Scene extends BaseScene {
 
         // --- LEVEL COMPONENTS --- //
         const up = new Vector3(0, 1, 0);
-        const upsideDown = new Quaternion().setFromUnitVectors(up, new Vector3(0, -1, 0));
 
         // const level = new Land(this, true);
         const level = new LevelObject(this, 'level5', {
@@ -48,7 +47,7 @@ class Level05Scene extends BaseScene {
                     this.state.p1OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -65,7 +64,7 @@ class Level05Scene extends BaseScene {
                     this.state.p2OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player2.name) {
                     this.state.p2OnPad = false;

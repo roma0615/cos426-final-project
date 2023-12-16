@@ -6,7 +6,6 @@ import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
 import BaseScene, { COLLISION_GROUPS } from './BaseScene';
 import Game from '../Game';
-import Platform from '../objects/Platform';
 
 class Level06Scene extends BaseScene {
 
@@ -58,7 +57,7 @@ class Level06Scene extends BaseScene {
                     this.state.p1OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -76,7 +75,7 @@ class Level06Scene extends BaseScene {
                     this.state.p2OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player2.name) {
                     this.state.p2OnPad = false;

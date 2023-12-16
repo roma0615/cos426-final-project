@@ -1,11 +1,7 @@
-import { MathUtils, Group, BoxGeometry, MeshBasicMaterial, Mesh, Quaternion, Vector3, Camera, Euler } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import TWEEN from 'three/examples/jsm/libs/tween.module.js';
+import { MathUtils, Quaternion, Vector3, Camera } from 'three';
 import * as CANNON from 'cannon-es';
 
-import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
-import { EPS, cannonQuatToThree, cannonVecToThree, threeQuatToCannon, threeVectorToCannon } from '../utils';
-import BaseScene from '../scenes/BaseScene';
+import { EPS, cannonQuatToThree, cannonVecToThree, threeVectorToCannon } from '../utils';
 import Game from '../Game';
 
 // adapted from https://github.com/schteppe/cannon.js/blob/master/examples/js/PointerLockControls.js#L5

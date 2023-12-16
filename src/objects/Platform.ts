@@ -1,8 +1,5 @@
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Vector3 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from 'three';
 import * as CANNON from 'cannon-es';
-import { threeToCannon } from "three-to-cannon";
-import TWEEN from 'https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.5.0/dist/tween.esm.js';
 
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 import { cannonVecToThree } from '../utils';
@@ -25,7 +22,6 @@ class Platform extends Group {
     repeat: number | undefined;
     easing: any;
     moving: boolean;
-    tween: TWEEN.Tween<any> | undefined;
 
     constructor(parent: LevelScene, name: string, options: Options) {
         // Call parent Group() constructor
@@ -36,8 +32,7 @@ class Platform extends Group {
         this.end = options.end;
         this.size = options.size || new CANNON.Box(new CANNON.Vec3(2, 0.25, 2))
         this.repeat = options.repeat || 1;
-        this.easing = options.easing || TWEEN.Easing.Quadratic.Out;
-        this.tween = undefined;
+        this.easing = options.easing
         this.moving = false;
 
         // Init cannon body
@@ -63,7 +58,7 @@ class Platform extends Group {
         this.add(box);
     }
 
-    update(timeStamp: number): void {
+    update(_timeStamp: number): void {
         // Update physics
         // update tweens
         if (this.moving && this.end !== undefined) {
@@ -97,10 +92,6 @@ class Platform extends Group {
 
         // Start animation
         // this.tween.start();
-    }
-
-    stopMovement() {
-        this.tween?.stop();
     }
 }
 

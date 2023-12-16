@@ -39,7 +39,7 @@ class Level01Scene extends BaseScene {
                     this.state.p1OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -56,7 +56,7 @@ class Level01Scene extends BaseScene {
                     this.state.p2OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player2.name) {
                     this.state.p2OnPad = false;

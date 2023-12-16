@@ -5,7 +5,6 @@ import * as CANNON from 'cannon-es';
 import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
 import BaseScene, { COLLISION_GROUPS } from './BaseScene';
-import Land from '../objects/Platform';
 import Game from '../Game';
 
 class Level02Scene extends BaseScene {
@@ -40,7 +39,7 @@ class Level02Scene extends BaseScene {
                     this.state.p1OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -56,7 +55,7 @@ class Level02Scene extends BaseScene {
                     this.state.p2OnPad = true;
                 }
             },
-            collideEndCallback: (self, e) => {
+            collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
                 if (otherObj.name == player1.name) {
                     this.state.p1OnPad = false;
@@ -68,26 +67,10 @@ class Level02Scene extends BaseScene {
         // cube for pushing into place
         const cube1 = new LevelObject(this, 'cube', {
             mass: 1,
-            collideCallback: (self, e) => {
-                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
-                // demo: invert gravity once u touch the red box
-                if (otherObj instanceof Player) {
-                    const p = otherObj as Player;
-                    // p.setGravity(p.state.gravity.scale(-1));
-                }
-            },
             offset: new Vector3(13, 6, 4),
         });
         const cube2 = new LevelObject(this, 'cube', {
             mass: 1,
-            collideCallback: (self, e) => {
-                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
-                // demo: invert gravity once u touch the red box
-                if (otherObj instanceof Player) {
-                    const p = otherObj as Player;
-                    // p.setGravity(p.state.gravity.scale(-1));
-                }
-            },
             offset: new Vector3(12.5, 1, -4),
         });
 
