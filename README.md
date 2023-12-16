@@ -1,3 +1,8 @@
+# Final Project Links
+[Click here]() for access to the project writeup.
+[Click here](https://www.youtube.com/watch?v=3kh5JluHzj4) for a video demo of our project.
+[Click here](https://roma0615.github.io/cos426-final-project/) for a live demo of our project.
+
 # COS 426 Final Project Template
 
 This skeleton project will help you get started with a ThreeJS project and provide a strong foundation for extension. It sets up a simple scene, camera, and renderer in a modern JavaScript environment, and is written using some common best-practices that you may want to draw from.
