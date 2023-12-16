@@ -57,8 +57,8 @@ class Level02Scene extends BaseScene {
             },
             collideEndCallback: (_self, e) => {
                 const otherObj = this.getObjByBody(e.body);
-                if (otherObj.name == player1.name) {
-                    this.state.p1OnPad = false;
+                if (otherObj.name == player2.name) {
+                    this.state.p2OnPad = false;
                 }
             },
             offset: new Vector3(10.5, 4.16, 6),
