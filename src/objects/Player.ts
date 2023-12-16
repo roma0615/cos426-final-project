@@ -34,6 +34,7 @@ class Player extends Group {
     };
     body: CANNON.Body;
     clock: Clock;
+    customUpdate: (self: Player, timeStamp: number) => void;
 
     constructor(
         index: number,
@@ -41,6 +42,7 @@ class Player extends Group {
         clock: Clock,
         initialPos = new CANNON.Vec3(),
         gravity = new CANNON.Vec3(0, -9.82, 0),
+        customUpdate = (self: Player, timeStamp: number) => {},
         show_wireframe = false,
     ) {
         // Call parent Group() constructor
@@ -68,6 +70,7 @@ class Player extends Group {
             gravityClock: new Clock(),
         };
         this.state.gravityClock.start();
+        this.customUpdate = customUpdate
 
         // Init body
         this.body = new CANNON.Body({
@@ -175,6 +178,8 @@ class Player extends Group {
     }
 
     update(timeStamp: number): void {
+        if (this.customUpdate) this.customUpdate(this, timeStamp);
+
         // apply the player's gravity
         this.body.applyForce(this.state.gravity);
 

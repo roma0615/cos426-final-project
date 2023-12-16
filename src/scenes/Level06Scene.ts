@@ -116,10 +116,6 @@ class Level06Scene extends BaseScene {
         this.add(level, player1, player2, pad1, pad2, gravityPad1, gravityPad2, gravityPad3, gravityPad4);
         // this.add(level, player1, player2);
     }
-
-    winAction() {
-        alert("YOU WIN!")
-    }
 }
 
 export default Level06Scene;
