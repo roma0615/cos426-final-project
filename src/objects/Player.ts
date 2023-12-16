@@ -6,8 +6,8 @@ import * as CANNON from 'cannon-es';
 import BaseScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 
 // Import player model as a URL using Vite's syntax
-import MODEL1 from './player1.glb?url';
-import MODEL2 from './player2.glb?url';
+import MODEL1 from '/src/assets/player1.glb?url';
+import MODEL2 from '/src/assets/player2.glb?url';
 
 class Player extends Group {
     // Define the type of the state field

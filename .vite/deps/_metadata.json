@@ -1,0 +1,56 @@
+{
+  "hash": "90999beb",
+  "browserHash": "d54350d5",
+  "optimized": {
+    "three": {
+      "src": "../../node_modules/three/build/three.module.js",
+      "file": "three.js",
+      "fileHash": "b74e9151",
+      "needsInterop": false
+    },
+    "three/examples/jsm/libs/tween.module.js": {
+      "src": "../../node_modules/three/examples/jsm/libs/tween.module.js",
+      "file": "three_examples_jsm_libs_tween__module__js.js",
+      "fileHash": "e4daa390",
+      "needsInterop": false
+    },
+    "cannon-es": {
+      "src": "../../node_modules/cannon-es/dist/cannon-es.js",
+      "file": "cannon-es.js",
+      "fileHash": "ed54dd23",
+      "needsInterop": false
+    },
+    "dat.gui": {
+      "src": "../../node_modules/dat.gui/build/dat.gui.module.js",
+      "file": "dat__gui.js",
+      "fileHash": "9bcca772",
+      "needsInterop": false
+    },
+    "three/examples/jsm/loaders/GLTFLoader.js": {
+      "src": "../../node_modules/three/examples/jsm/loaders/GLTFLoader.js",
+      "file": "three_examples_jsm_loaders_GLTFLoader__js.js",
+      "fileHash": "a8ac8427",
+      "needsInterop": false
+    },
+    "three/examples/jsm/utils/SkeletonUtils.js": {
+      "src": "../../node_modules/three/examples/jsm/utils/SkeletonUtils.js",
+      "file": "three_examples_jsm_utils_SkeletonUtils__js.js",
+      "fileHash": "d08799f0",
+      "needsInterop": false
+    },
+    "three-to-cannon": {
+      "src": "../../node_modules/three-to-cannon/dist/three-to-cannon.modern.js",
+      "file": "three-to-cannon.js",
+      "fileHash": "511707f3",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-PUD7QCA2": {
+      "file": "chunk-PUD7QCA2.js"
+    },
+    "chunk-GNSLQ2WX": {
+      "file": "chunk-GNSLQ2WX.js"
+    }
+  }
+}

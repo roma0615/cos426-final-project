@@ -44,7 +44,7 @@ class LevelObject extends Group {
     ) {
         // Call parent Group() constructor
         super();
-        this.modelName = `src/objects/${modelName}.glb?url`;
+        this.modelName = new URL(`/src/assets/${modelName}.glb?url`, import.meta.url).href;
         this.initialOffset = options.offset || new Vector3(0, 0, 0);
         this.initialQuaternion = options.quaternion || new Quaternion();
         this.bodyType = options.bodyType || CANNON.Body.DYNAMIC;
