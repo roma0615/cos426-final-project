@@ -33,11 +33,21 @@ class Level06Scene extends BaseScene {
             generateShapesOfChildren: true,
         });
 
-        const plat1 = new Platform(this, 'plat1', {
-            start: new CANNON.Vec3(15, -1, -8),
-            end: new CANNON.Vec3(0, -1, -8),
-            size: new CANNON.Box(new CANNON.Vec3(8, 0.25, 2)),
+        const gravityPadConfig = () => ({
+            bodyType: CANNON.Body.STATIC,
+            isTrigger: true,
+            generateShapesOfChildren: true,
+            collideCallback: (self: LevelObject, e: any) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj instanceof Player) {
+                    const p = otherObj as Player;
+                    // set gravity in the orientation of the pad
+                    p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
+                    // this.state.p1OnPad = true;
+                }
+            },
         });
+
 
         // landing pad on the ceiling.
         const pad1 = new LevelObject(this, 'landing_pad1', {
@@ -54,7 +64,7 @@ class Level06Scene extends BaseScene {
                     this.state.p1OnPad = false;
                 }
             },
-            offset: new Vector3(-7, 19, 0),
+            offset: new Vector3(70, 0, -5),
             quaternion: upsideDown,
         });
         // landing pad
@@ -72,22 +82,38 @@ class Level06Scene extends BaseScene {
                     this.state.p2OnPad = false;
                 }
             },
-            offset: new Vector3(7, 0, 0),
+            offset: new Vector3(70, 0, 5),
         });
 
-        const button = new LevelObject(this, 'button', {
-            bodyType: CANNON.Body.STATIC,
-            collideCallback: (self, e) => {
-                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
-                if (otherObj instanceof Player) {
-                    // trigger movement of the platform
-                    plat1.startMovement();
-                }
-            },
-            offset: new Vector3(-13, 0, 11),
+        // gravity pad!!! omg
+        const gravityPad1 = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(8, 3.5, 0),
+            quaternion: new Quaternion().setFromUnitVectors(up, new Vector3(0, 1, 0)) // sideawys!!
         });
 
-        this.add(level, player1, player2, button, pad1, pad2, plat1);
+        // gravity pad!!! omg
+        const gravityPad2 = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(25, 17, 0),
+            quaternion: new Quaternion().setFromUnitVectors(up, new Vector3(0, -1, 0)) // sideawys!!
+        });
+
+        // gravity pad!!! omg
+        const gravityPad3 = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(38, 3.5, 0),
+            quaternion: new Quaternion().setFromUnitVectors(up, new Vector3(0, 1, 0)) // sideawys!!
+        });
+
+        // gravity pad!!! omg
+        const gravityPad4 = new LevelObject(this, 'gravity_pad', {
+            ...gravityPadConfig(),
+            offset: new Vector3(48, 17, 0),
+            quaternion: new Quaternion().setFromUnitVectors(up, new Vector3(0, -1, 0)) // sideawys!!
+        });
+
+        this.add(level, player1, player2, pad1, pad2, gravityPad1, gravityPad2, gravityPad3, gravityPad4);
         // this.add(level, player1, player2);
     }
 
