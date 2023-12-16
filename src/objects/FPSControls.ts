@@ -199,16 +199,7 @@ class FPSControls {
         cameraWorldDir.normalize();
         // subtract the "up" direction (based on gravity of player) projection and then normalize
         // cameraWorldDirOrthToGravity takes the direction of camera and removes any component along the gravity axis
-        const gravAxisComponent = cameraWorldDir.clone().projectOnVector(normGrav);
-        const cameraWorldDirOrthToGravity = cameraWorldDir.clone().sub(gravAxisComponent).normalize();
 
-        // const movementRot = alignTopT.clone();
-        // movementRot.multiply(new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), cannonVecToThree(globalUp).normalize())); // orientation
-        // console.log(cameraWorldDirOrthToGravity);
-        // movementRot.multiply(new Quaternion().setFromUnitVectors(new Vector3(1, 0, 0), cameraWorldDirOrthToGravity)); // plane of movement
-
-        // TODO fix
-        // inputVelocity.applyQuaternion(movementRot);
         inputVelocity.normalize().multiplyScalar(this.getPlayer().state.walkSpeed);
 
         const inputVelocityGlobal = new CANNON.Vec3();

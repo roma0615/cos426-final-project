@@ -62,6 +62,7 @@ class Player extends Group {
             canJump: false,
             quat: new Quaternion(),
             walkSpeed: 0.125,
+            // walkSpeed: 10,
             jumpVelocity: 8.5,
             gravity: gravity || new CANNON.Vec3(0, -9.82, 0),
             gravityClock: new Clock(),
