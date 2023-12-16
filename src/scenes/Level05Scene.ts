@@ -54,8 +54,7 @@ class Level05Scene extends BaseScene {
                     this.state.p1OnPad = false;
                 }
             },
-            offset: new Vector3(-7, 19, 0),
-            quaternion: upsideDown,
+            offset: new Vector3(11, 0, -7),
         });
         // landing pad
         const pad2 = new LevelObject(this, 'landing_pad2', {
@@ -72,7 +71,7 @@ class Level05Scene extends BaseScene {
                     this.state.p2OnPad = false;
                 }
             },
-            offset: new Vector3(7, 0, 0),
+            offset: new Vector3(11, 0, 7),
         });
 
         const button = new LevelObject(this, 'button', {
@@ -87,7 +86,39 @@ class Level05Scene extends BaseScene {
             offset: new Vector3(-13, 0, 11),
         });
 
-        this.add(level, player1, player2, button, pad1, pad2, plat1);
+
+        const gravityPadConfig = () => ({
+            bodyType: CANNON.Body.STATIC,
+            isTrigger: true,
+            generateShapesOfChildren: true,
+            collideCallback: (self: LevelObject, e: any) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj instanceof Player) {
+                    const p = otherObj as Player;
+                    // set gravity in the orientation of the pad
+                    p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
+                    // this.state.p1OnPad = true;
+                }
+            },
+        });
+        const gravityPad = new LevelObject(this, "gravity_pad", {
+            ...gravityPadConfig(),
+            offset: new Vector3(-13, 0, 5),
+            quaternion: new Quaternion().setFromUnitVectors(up, new Vector3(1, 0, 0)) // sideawys!!
+        });
+        const button2 = new LevelObject(this, 'button', {
+            bodyType: CANNON.Body.STATIC,
+            collideCallback: (self, e) => {
+                const otherObj = this.getObjByBody(LevelObject.getOtherFromContact(self, e));
+                if (otherObj instanceof Player) {
+                    // make the gravity switch apepar
+                    this.add(gravityPad);
+                }
+            },
+            offset: new Vector3(11, 0, -11),
+        });
+
+        this.add(level, player1, player2, button, button2, pad1, pad2, plat1);
         // this.add(level, player1, player2);
     }
 

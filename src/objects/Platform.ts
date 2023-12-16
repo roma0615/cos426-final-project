@@ -2,7 +2,7 @@ import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as CANNON from 'cannon-es';
 import { threeToCannon } from "three-to-cannon";
-import TWEEN, { Tween } from 'three/examples/jsm/libs/tween.module.js';
+import TWEEN from 'https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.5.0/dist/tween.esm.js';
 
 import LevelScene, { COLLISION_GROUPS } from '../scenes/BaseScene';
 import { cannonVecToThree } from '../utils';
@@ -24,7 +24,8 @@ class Platform extends Group {
     size: CANNON.Box;
     repeat: number | undefined;
     easing: any;
-    tween: Tween<any> | undefined;
+    moving: boolean;
+    tween: TWEEN.Tween<any> | undefined;
 
     constructor(parent: LevelScene, name: string, options: Options) {
         // Call parent Group() constructor
@@ -37,6 +38,7 @@ class Platform extends Group {
         this.repeat = options.repeat || 1;
         this.easing = options.easing || TWEEN.Easing.Quadratic.Out;
         this.tween = undefined;
+        this.moving = false;
 
         // Init cannon body
         this.parent = parent;
@@ -63,12 +65,15 @@ class Platform extends Group {
 
     update(timeStamp: number): void {
         // Update physics
+        // update tweens
+        if (this.moving && this.end !== undefined) {
+            const pos = cannonVecToThree(this.body.position).lerp(cannonVecToThree(this.end), 0.01);
+            this.body.position.copy(pos as any);
+        }
+
         this.position.copy(this.body.position as any);
         this.quaternion.copy(this.body.quaternion as any);
 
-        console.log("UDatping twiens");
-        // update tweens
-        TWEEN.update();
     }
 
     startMovement() {
@@ -78,16 +83,20 @@ class Platform extends Group {
         // Possible easings: http://sole.github.io/tween.js/examples/03_graphs.html
         console.log("Start movement");
         if (this.end === undefined) return;
-        if (this.tween !== undefined) return;
-        console.log("Creating tween.");
-        this.tween = new Tween(this.body.position)
-            .to({ x: this.end.x, y: this.end.y, z: this.end.z}, 1000) // take a second to complete
-            .to({ x: this.start.x, y: this.start.y, z: this.start.z}, 1000) // take a second to complete
-            .easing(this.easing);
-            // .repeat(this.repeat);
+
+        this.moving = true;
+
+        // if (this.tween !== undefined) return;
+        // console.log("Creating tween.");
+        // const movePlatform = new TWEEN.Tween(this.body.position)
+        //     .to({ x: this.end.x, y: this.end.y, z: this.end.z }, 1000) // take a second to complete
+        //     .to({ x: this.start.x, y: this.start.y, z: this.start.z }, 1000) // take a second to complete
+        //     .easing(this.easing)
+        //     .start(); // Start the animation
+        //     // .repeat(this.repeat);
 
         // Start animation
-        this.tween.start();
+        // this.tween.start();
     }
 
     stopMovement() {

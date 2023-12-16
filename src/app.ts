@@ -15,6 +15,8 @@ import Level01Scene from './scenes/Level01Scene';
 import Level02Scene from './scenes/Level02Scene';
 import Game from './Game';
 
+import TWEEN from 'three/examples/jsm/libs/tween.module.js';
+
 // Initialize core ThreeJS components
 
 const camera = new PerspectiveCamera();
@@ -51,9 +53,11 @@ const onAnimationFrameHandler = (timeStamp: number) => {
     controls.update(timeStamp);
     renderer.render(game.getLevel(), camera);
     game.getLevel().update && game.getLevel().update(timeStamp);
+    TWEEN.update(timeStamp);
     window.requestAnimationFrame(onAnimationFrameHandler);
 };
 window.requestAnimationFrame(onAnimationFrameHandler);
+TWEEN.update();
 
 // Resize Handler
 const windowResizeHandler = () => {

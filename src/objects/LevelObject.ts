@@ -90,7 +90,6 @@ class LevelObject extends Group {
                 : [gltf.scene];
             objs.forEach((c) => {
                 if (c.name.endsWith("_X")) {
-                    console.log("Not creating CANNON shape for", c);
                     return; // don't add shapes for objects with _X
                 }
                 const result = threeToCannon(c);
