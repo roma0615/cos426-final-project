@@ -1,4 +1,4 @@
-import { Mesh, MeshPhongMaterial, SphereGeometry } from 'three';
+import { Mesh, MeshPhongMaterial, Quaternion, SphereGeometry, SpotLight, Vector3 } from 'three';
 
 import * as CANNON from 'cannon-es';
 
@@ -46,7 +46,11 @@ class Level07Scene extends BaseScene {
         });
         this.world.addBody(planetBody);
 
-        this.add(player1, player2, planet, thanks);
+        const light = new SpotLight( 0xffffdd, 50, 0, Math.PI / 2, 0, 1);
+        light.position.set(0, -24, 0);
+        light.quaternion.copy(new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, -1, 0)));
+
+        this.add(player1, player2, planet, thanks, light);
         // this.add(level, player1, player2);
     }
 

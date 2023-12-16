@@ -23,7 +23,6 @@ class Level06Scene extends BaseScene {
 
         // --- LEVEL COMPONENTS --- //
         const up = new Vector3(0, 1, 0);
-        const upsideDown = new Quaternion().setFromUnitVectors(up, new Vector3(0, -1, 0));
 
         // const level = new Land(this, true);
         const level = new LevelObject(this, 'level6', {
@@ -64,7 +63,6 @@ class Level06Scene extends BaseScene {
                 }
             },
             offset: new Vector3(70, 0, -5),
-            quaternion: upsideDown,
         });
         // landing pad
         const pad2 = new LevelObject(this, 'landing_pad2', {
