@@ -57,7 +57,7 @@ class Player extends Group {
             cameraAngle: {
                 // todo replace this with a quaternion so we don't get weird jumping
                 x: -Math.PI / 2,
-                y: Math.PI / 3,
+                y: Math.PI / 2.2,
             },
             contactNormal: new CANNON.Vec3(),
             canJump: false,

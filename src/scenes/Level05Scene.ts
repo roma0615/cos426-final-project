@@ -102,6 +102,7 @@ class Level05Scene extends BaseScene {
         });
         const gravityPad = new LevelObject(this, "gravity_pad", {
             ...gravityPadConfig(),
+            dontAddBody: true,
             offset: new Vector3(-13, 0, 5),
             quaternion: new Quaternion().setFromUnitVectors(up, new Vector3(1, 0, 0)) // sideawys!!
         });
@@ -112,6 +113,7 @@ class Level05Scene extends BaseScene {
                 if (otherObj instanceof Player) {
                     // make the gravity switch apepar
                     this.add(gravityPad);
+                    this.world.addBody(gravityPad.body);
                 }
             },
             offset: new Vector3(11, 0, -11),

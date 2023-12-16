@@ -20,6 +20,7 @@ interface Options {
     collideEndCallback: ((self: LevelObject, e: any) => void) | undefined;
     updateCallback: ((timeStamp: number) => void) | undefined;
     show_wireframe: boolean;
+    dontAddBody: boolean;
 }
 
 // base class for object
@@ -74,7 +75,7 @@ class LevelObject extends Group {
                 COLLISION_GROUPS.OBJECTS,
         });
         // this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-        parent.world.addBody(this.body);
+        if (!(options.dontAddBody || false)) parent.world.addBody(this.body);
         parent.registerBody(this.body, this);
 
         const loader = new GLTFLoader();
