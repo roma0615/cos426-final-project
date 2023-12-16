@@ -121,10 +121,6 @@ class Level05Scene extends BaseScene {
         this.add(level, player1, player2, button, button2, pad1, pad2, plat1);
         // this.add(level, player1, player2);
     }
-
-    winAction() {
-        alert("YOU WIN!")
-    }
 }
 
 export default Level05Scene;
