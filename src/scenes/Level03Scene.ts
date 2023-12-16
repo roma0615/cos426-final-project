@@ -41,7 +41,6 @@ class Level03Scene extends BaseScene {
                     const p = otherObj as Player;
                     // set gravity in the orientation of the pad
                     p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
-                    // this.state.p1OnPad = true;
                 }
             },
         });

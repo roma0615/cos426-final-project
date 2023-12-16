@@ -60,13 +60,8 @@ class FPSControls {
             this.state.keysPressed.add(key);
         }
 
-        // console.log(event);
         if (key == "r") { // restart level
             this.game.restart();
-        }
-        if (key == "g") { // flip gravity // todo remove this
-            // this.getPlayer().setGravity(this.getPlayer().state.gravity.scale(-1));
-            this.getPlayer().setGravity(new CANNON.Vec3(-2, -8, 0));
         }
         if (event.code == "ArrowRight") {
             this.game.setLevel(this.game.activeLevel+1);
