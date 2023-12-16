@@ -41,7 +41,7 @@ canvas.addEventListener('click', async () => {
 // controls.minDistance = 4;
 // controls.maxDistance = 16;
 // controls.update();
-const controls = new FPSControls(camera, game);
+export const controls = new FPSControls(camera, game);
 // const controls = new PointerLockControls(camera, canvas);
 
 // Render loop

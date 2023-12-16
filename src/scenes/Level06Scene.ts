@@ -6,6 +6,7 @@ import Player from '../objects/Player';
 import LevelObject from '../objects/LevelObject';
 import BaseScene, { COLLISION_GROUPS } from './BaseScene';
 import Game from '../Game';
+import { controls } from '../app';
 
 class Level06Scene extends BaseScene {
 
@@ -40,7 +41,13 @@ class Level06Scene extends BaseScene {
                 if (otherObj instanceof Player) {
                     const p = otherObj as Player;
                     // set gravity in the orientation of the pad
-                    p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
+                    const success = p.setGravity(self.body.vectorToWorldFrame(new CANNON.Vec3(0, 1, 0)).scale(9.82));
+                    if (!success) return;
+                    // rotate the player around 180
+                    controls.state.cameraAngle.x += Math.PI;
+                    p.state.cameraAngle.x += Math.PI;
+                    const rotate180 = new CANNON.Quaternion().setFromVectors(new CANNON.Vec3(1, 0, 0), new CANNON.Vec3(0, 0, 1));
+                    p.body.quaternion.mult(rotate180);
                     // this.state.p1OnPad = true;
                 }
             },

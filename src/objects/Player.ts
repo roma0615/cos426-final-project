@@ -124,7 +124,7 @@ class Player extends Group {
         this.body.addEventListener('collide', this.collideHandler.bind(this));
     }
 
-    setGravity(newGrav: CANNON.Vec3) {
+    setGravity(newGrav: CANNON.Vec3): boolean {
         // gravity set cooldown is 0.5 seconds
         if (this.state.gravityClock.getDelta() > 0.5) {
             // change quaternion to point in direction of newGrav
@@ -132,7 +132,9 @@ class Player extends Group {
             this.body.quaternion = this.body.quaternion.mult(quat);
             this.quaternion.copy(this.body.quaternion as any);
             this.state.gravity.copy(newGrav);
+            return true;
         }
+        return false;
     }
 
     collideHandler(e: any) {
