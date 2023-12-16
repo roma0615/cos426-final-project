@@ -93,9 +93,9 @@ class BaseScene extends Scene {
                 this.materials.ground,
                 this.materials.player,
                 {
-                    friction: 0.01,
+                    friction: 0.2,
                     restitution: 0.3,
-                    contactEquationStiffness: 1e8, // softer
+                    contactEquationStiffness: 1e3, // softer
                     contactEquationRelaxation: 3,
                     frictionEquationStiffness: 1e8,
                 }
