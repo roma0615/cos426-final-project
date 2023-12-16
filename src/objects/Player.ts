@@ -140,14 +140,11 @@ class Player extends Group {
         upAxis.normalize();
         const contact = e.contact;
 
-        let otherBody = contact.bi;
-
         // contact.bi and contact.bj are the colliding bodies, and contact.ni is the collision normal.
         // We do not yet know which one is which! const's check.
         if (contact.bi.id == this.body.id) {
             // bi is the player body, flip the contact normal
             contact.ni.negate(this.state.contactNormal);
-            otherBody = contact.bj;
         }
         else this.state.contactNormal.copy(contact.ni); // bi is something else. Keep the normal as it is
 
