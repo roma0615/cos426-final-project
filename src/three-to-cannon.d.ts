@@ -1,1 +1,2 @@
-declare module "three-to-js"
+// three-to-cannon.d.ts
+declare module "three-to-cannon";
